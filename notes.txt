@@ -1,0 +1,3 @@
+Pour utiliser source ./venv/bin/activate il faut aller dans toudou_starter/toudou
+Possibe de stocker les taches dans une bd 
+
