@@ -22,3 +22,5 @@ Or with PDM:
 
     $ pdm install
     $ pdm run toudou
+
+how to get out : deactivate
