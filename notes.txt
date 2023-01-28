@@ -1,3 +1,6 @@
 Pour utiliser source ./venv/bin/activate il faut aller dans toudou_starter/toudou
 Possibe de stocker les taches dans une bd 
 
+Probleme avec les path 
+sont relatif a l'endroit ou on lance la commande toudou
+toujour lancer toudou dans 	rchilog/toudou/starte/toudou
