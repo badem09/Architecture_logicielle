@@ -1,9 +1,19 @@
-Pour utiliser source ./venv/bin/activate il faut aller dans toudou_starter/toudou
+Pour utiliser source .venvbinactivate il faut aller dans toudou_startertoudou
 Possibe de stocker les taches dans une bd 
 
 Probleme avec les path 
 sont relatif a l'endroit ou on lance la commande toudou
-toujour lancer toudou dans 	rchilog/toudou/starte/toudou
+toujour lancer toudou dans 	rchilogtoudoustartetoudou
 
 
-pour refaire l'instalation : suppr (en local) les dossiers/fichiers qui ont commit "Generes instalations") ou branche instalation
+pour refaire l'instalation  suppr (en local) les dossiersfichiers qui ont commit Generes instalations) ou branche instalation
+
+
+
+01/02
+
+pour lancer sur windows:
+
+pip install pdm
+python -m pdm install 
+python -m pdm run toudou
