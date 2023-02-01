@@ -45,7 +45,7 @@ def create_todo(
     write_to_file(todo, str(todo.id))
     write_csv(todo, str(todo.id))
 
-#update / delete
+#update dans csv et dasn pickle / delete
 
 def get_todo(id: int) -> Todo:
     return read_from_file(str(id))
@@ -67,11 +67,6 @@ def write_csv(todo: Todo, filename: str):
     with open('taches.csv', 'a', newline='') as file:
         writer = csv.writer(file)
         writer.writerow([todo.id, todo.due, todo.task, todo.complete])
-
-def create_csv_file():
-    with open('taches.csv', 'w', newline='') as file:
-        writer = csv.writer(file)
-        writer.writerow(["ID", "Date", "Nom", "Status"])
 
 @click.group()
 def cli():
@@ -102,6 +97,3 @@ def get(id: int):
 def get_all():
     click.echo(get_todos())
 
-@cli.command()
-def init_csv():
-    create_csv_file()
