@@ -6,8 +6,20 @@ from dataclasses import dataclass
 from datetime import datetime
 from typing import Optional
 
+import sqlalchemy
+from sqlalchemy import create_engine, MetaData, Table, Column, Integer, String, Boolean, DateTime
 
 TODO_FOLDER = "db"
+metadata_obj = MetaData()
+engine = create_engine("sqlite:///todos.db", echo=True)
+todo_table = Table(
+    "todos",
+    metadata_obj,
+    Column("id", Integer, primary_key=True, autoincrement=True),
+    Column("task", String(1000), nullable=False),
+    Column("complete", Boolean, nullable=False),
+    Column("due", DateTime, nullable=True)
+)
 
 
 @dataclass
@@ -19,17 +31,19 @@ class Todo:
 
 
 def init_db() -> None:
-    os.makedirs(TODO_FOLDER, exist_ok=True)
+    metadata_obj.create_all(engine)
+    # n'écrase pas si ya deja une bd.
 
 
-def read_from_file(filename: str) -> Todo:
-    with open(os.path.join(TODO_FOLDER, filename), "rb") as f:
-        return pickle.load(f)
-
-
-def write_to_file(todo: Todo, filename: str) -> None:
-    with open(os.path.join(TODO_FOLDER, filename), "wb") as f:
-        pickle.dump(todo, f)
+def write_to_bd(todo: Todo, filename: str) -> None:
+    requete = sqlalchemy.Insert(todo_table).values(
+        task = todo.task,
+        complete = todo.complete,
+        due = todo.due
+    )
+    with engine.connect() as conn:
+        result = conn.execute(requete)
+        conn.commit()
 
 
 def create_todo(
@@ -38,19 +52,19 @@ def create_todo(
     due: Optional[datetime] = None,
 ) -> None:
     todo = Todo(uuid.uuid4().int, task=task, complete=complete, due=due)
-    write_to_file(todo, str(todo.id))
+    write_to_bd(todo, str(todo.id))
 
 
 def get_todo(id: int) -> Todo:
-    return read_from_file(str(id))
+    id = sqlalchemy.sql.column('id')
+    s = sqlalchemy.sql.select(['*']).where(id == 1)
 
 
 def get_todos() -> list[Todo]:
-    result = []
-    for id in os.listdir(TODO_FOLDER):
-        todo = get_todo(int(id))
-        if todo:
-            result.append(todo)
+    requete = todo_table.select()
+    with engine.connect() as conn:
+        result = conn.execute(requete).fetchall()
+        conn.commit()
     return result
 
 
@@ -62,7 +76,7 @@ def update_todo(
 ) -> None:
     if get_todo(id):
         todo = Todo(id, task=task, complete=complete, due=due)
-        write_to_file(todo, str(todo.id))
+        write_to_bd(todo, str(todo.id))
 
 
 def delete_todo(id: int) -> None:
