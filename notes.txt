@@ -1,3 +1,5 @@
+https://kathode.neocities.org/
+
 Pour utiliser source .venvbinactivate il faut aller dans toudou_startertoudou
 Possibe de stocker les taches dans une bd 
 
