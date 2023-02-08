@@ -7,7 +7,7 @@ from datetime import datetime
 from typing import Optional
 
 import sqlalchemy
-from sqlalchemy import create_engine, MetaData, Table, Column, Integer, String, Boolean, DateTime
+from sqlalchemy import create_engine, MetaData, Table, Column, Integer, String, Boolean, DateTime, select
 
 TODO_FOLDER = "db"
 metadata_obj = MetaData()
@@ -61,10 +61,17 @@ def get_todo(id: int) -> Todo:
 
 
 def get_todos() -> list[Todo]:
+    requete = select(todo_table)
     requete = todo_table.select()
     with engine.connect() as conn:
         result = conn.execute(requete).fetchall()
         conn.commit()
+    return result
+
+    #Autre methode :
+    #requete = select(todo_table)
+    #result = engine.connect().execute(requete).fetchall()
+
     return result
 
 
