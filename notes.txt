@@ -1,5 +1,7 @@
 https://kathode.neocities.org/
 
+Des fois ca bug donc fermer powershell et le réouvrir
+
 Pour utiliser source .venvbinactivate il faut aller dans toudou_startertoudou
 Possibe de stocker les taches dans une bd 
 
