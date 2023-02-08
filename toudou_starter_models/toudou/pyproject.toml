@@ -1,0 +1,12 @@
+[project]
+name = "Toudou"
+version = "0.1"
+description = "A simple task manager."
+readme = "README.md"
+dependencies = ["click>=8.1.3"]
+requires-python = ">=3.7"
+license = { text = "MIT" }
+
+
+[project.scripts]
+toudou = "toudou.views:cli"
