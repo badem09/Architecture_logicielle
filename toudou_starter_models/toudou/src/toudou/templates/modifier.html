@@ -11,7 +11,7 @@ https://roytuts.com/flash-message-management-in-python-flask/-->
   {% endif %}
 {% endwith %}
 
-<form action="{{ url_for('handle_modifier') }}" method="post">
+<form action="{{ url_for('modifier') }}" method="post">
     <input type="hidden" name="id" id="id" value="{{task.id}}">
     <div>
         <label for="intitule">Intutulé : </label>

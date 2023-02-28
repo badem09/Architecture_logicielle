@@ -7,14 +7,11 @@ from datetime import datetime
 app = Flask(__name__)
 app.secret_key = "secret key"
 
-#import toudou.models as models
-#import toudou.services as services
-
 import models
 import services
 
 @app.route('/')
-def index():
+def redirect_index():
     taches = models.get_todos()
     return flask.render_template('index.html', tasks=taches)
 
@@ -23,8 +20,8 @@ def completer(id):
     models.complete_todo(id)
     return flask.render_template('index.html', tasks=models.get_todos())
 
-@app.route('/modifier/<int:id>')
-def modifier(id):
+@app.route('/redirect_modifier/<int:id>')
+def redirect_modifier(id):
     return flask.render_template('modifier.html', task=models.get_todo(id))
 
 @app.route('/supprimer/<int:id>')
@@ -33,12 +30,12 @@ def supprimer(id):
     taches = models.get_todos()
     return flask.render_template('index.html', tasks=taches)
 
-@app.route('/ajouter')
-def ajouter():
+@app.route('/redirect_ajouter')
+def redirect_ajouter():
     return flask.render_template('ajouter.html')
 
-@app.route('/handle_modifier', methods=['POST'])
-def handle_modifier():
+@app.route('/modifier', methods=['POST'])
+def modifier():
     if flask.request.method == 'POST':
         tab = flask.request.form
         id = flask.request.form.get("id")
@@ -55,10 +52,10 @@ def handle_modifier():
         models.update_todo(id,intitule,status,date)
 
     taches = models.get_todos()
-    return flask.render_template('index.html', posts=taches)
+    return flask.render_template('index.html', tasks=taches)
 
-@app.route('/handle_ajouter', methods=['POST'])
-def handle_ajout():
+@app.route('/ajout', methods=['POST'])
+def ajout():
     if flask.request.method == 'POST':
         tab = flask.request.form
         intitule = tab.get("intitule")
@@ -73,14 +70,14 @@ def tous_supprimer():
     models.delete_all()
     return flask.render_template('index.html', tasks=[])
 
-@app.route('/import_csv')
-def import_csv():
+@app.route('/redirect_import_csv')
+def redirect_import_csv():
     return flask.render_template('import_csv.html', tasks=[], filename="")
 
 
-@app.route('/handle_import_csv', methods=['POST'])
-@app.route('/handle_import_csv/<filename>')
-def handle_import_csv(filename=""):
+@app.route('/import_csv', methods=['POST'])
+@app.route('/import_csv/<filename>')
+def import_csv(filename=""):
     # creer custom conveter : https://exploreflask.com/en/latest/views.html#url-converters
 
     if flask.request.method == 'POST':
@@ -98,15 +95,15 @@ def handle_import_csv(filename=""):
         return flask.render_template('index.html', tasks=tasks)
 
 
-@app.route('/export_csv')
-def export_csv():
+@app.route('/redirect_export_csv')
+def redirect_export_csv():
     #tick box pour slectionne quelles tahces exporter
     return flask.render_template('export_csv.html', tasks=models.get_todos())
 
-@app.route('/handle_export_csv', methods=['POST'])
-def handle_export_csv():
+@app.route('/export_csv', methods=['POST'])
+def export_csv():
     tasks=[]
-    # tick box pour slectionne quelles tahces exporter
+    # Attention : ecrase
     if flask.request.method == 'POST':
         tab = flask.request.form
         for t in tab.values():
@@ -114,7 +111,7 @@ def handle_export_csv():
         path = services.export_to_csv(tasks)
         print(list(tab.items()))
 
-        flask.flash("Les tàches séléctionnées ont bien été exportées ici : " + path)
+        flask.flash("Les tàches séléctionnées ont bien été exportées ici : \n" + path)
 
     return flask.render_template('export_csv.html', tasks=models.get_todos())
 

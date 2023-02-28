@@ -1,8 +1,5 @@
 import click
-import io
-
 from datetime import datetime
-
 import models
 import services
 

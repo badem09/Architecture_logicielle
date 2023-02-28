@@ -12,7 +12,7 @@
 
 
 <h3 style="text-align : center;">Séléctionnez les tâches à exporter</h3>
-<form action="{{ url_for('handle_export_csv') }}" method="post">
+<form action="{{ url_for('export_csv') }}" method="post">
     <div id="scrollBox2">
         <fieldset>
             {% for task in tasks %}
