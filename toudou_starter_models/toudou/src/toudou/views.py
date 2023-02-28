@@ -3,8 +3,8 @@ import io
 
 from datetime import datetime
 
-import toudou.models as models
-import toudou.services as services
+import models
+import services
 
 
 @click.group()
@@ -40,10 +40,17 @@ def get_all(as_csv: bool):
 
 
 @cli.command()
-@click.argument('csv_file', type=click.File('r'))
-def import_csv(csv_file: io.TextIOWrapper):
-    services.import_from_csv(csv_file.read())
+@click.argument('file')
+def import_csv(file: str):
+    tasks = services.import_from_csv(file)
+    for t in tasks:
+        models.write_to_bd(t)
+    click.echo(str(len(tasks)) + " taches ont bien été enregistrés")
 
+
+@cli.command()
+def export_csv():
+    services.export_to_csv()
 
 @cli.command()
 @click.option("--id", required=True, type=click.INT, help="Todo's id.")

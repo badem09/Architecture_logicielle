@@ -1,0 +1,33 @@
+{% extends 'base.html' %}
+{% block content %}
+
+{% with messages = get_flashed_messages() %}
+  {% if messages %}
+
+	    {{ messages[0] }}
+<!--psk sinon yen a 4 de message
+https://roytuts.com/flash-message-management-in-python-flask/-->
+
+  {% endif %}
+{% endwith %}
+
+<form action="{{ url_for('handle_modifier') }}" method="post">
+    <input type="hidden" name="id" id="id" value="{{task.id}}">
+    <div>
+        <label for="intitule">Intutulé : </label>
+        <input type="text" id="intitule" name="intitule" value="{{task.task}}">
+    </div>
+    <select name="status">
+        <option name="done"> Complétée </option>
+        <option name="undone"> Imcompléte </option>
+    </select>
+    <div>
+        <label for="date"> Date </label>
+        <input type="date" id="date" name="date" value="{{task.due.strftime('%Y-%m-%d')}}">
+    </div>
+    <label for="ok"> OK </label>
+    <input type="submit" id="ok">
+</form>
+
+
+{% endblock %}

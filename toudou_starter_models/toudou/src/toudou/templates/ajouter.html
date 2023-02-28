@@ -1,0 +1,21 @@
+{% extends 'base.html' %}
+{% block content %}
+
+<div style="display:flex; justify-content: center;" class="form">
+<form action="{{ url_for('handle_ajout') }}" method="post">
+    <div>
+        <label for="intitule">Intutulé : </label>
+        <input type="text" id="intitule" name="intitule">
+    </div>
+    <div>
+        <label for="date"> Date </label>
+        <input type="date" id="date" name="date"/>
+    </div>
+    <label for="ok"> OK </label>
+    <input type="submit" id="ok">
+</form>
+</div>
+
+
+
+{% endblock %}

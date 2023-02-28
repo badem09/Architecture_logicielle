@@ -1,0 +1,49 @@
+{% extends 'base.html' %}
+
+{% block content %}
+
+{% with messages = get_flashed_messages() %}
+  {% if messages %}
+
+	    {{ messages[0] }}
+        <br>
+  {% endif %}
+{% endwith %}
+
+
+<h3 style="text-align : center;">Séléctionnez les tâches à exporter</h3>
+<form action="{{ url_for('handle_export_csv') }}" method="post">
+    <div id="scrollBox2">
+        <fieldset>
+            {% for task in tasks %}
+            <div id="tache{{task.id}}" class="center">
+                <input type="radio" name="task{{task.id}}" id="task{{task.id}}" value="{{task.id}}"/><br />
+                <h4>Intitulé : {{ task.task }}</h4>
+                <script>
+                var para = document.createElement("p");
+                if ("{{task.complete}}" == "True"){
+                var node = document.createTextNode("Complete");
+                }
+                else{
+                var node = document.createTextNode("Imcomplete");
+                }
+                para.appendChild(node);
+                var element = document.getElementById("tache{{task.id}}");
+                element.appendChild(para);
+                </script>
+                <p>Due le : {{task.due.strftime("%Y-%m-%d")}}</p>
+               </div>
+             <hr>
+                    {% endfor %}
+
+
+        </fieldset>
+    </div>
+    <br>
+    <input type="submit" value="Submit">
+</form>
+
+
+
+
+{% endblock %}

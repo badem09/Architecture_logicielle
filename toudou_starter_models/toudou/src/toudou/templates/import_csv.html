@@ -1,0 +1,46 @@
+{% extends 'base.html' %}
+
+{% block content %}
+
+<form action="{{ url_for('handle_import_csv') }}" method="post" enctype="multipart/form-data">
+    <br>
+    <div>
+        <label for="file">Sélectionner le fichier à envoyer</label>
+        <br>
+        <input type="file" id="file" name="file"accept="*,.csv">
+    </div>
+    <br>
+    <div>
+        <input type="submit" id="ok" >
+    </div>
+</form>
+
+<h3>Contenu du fichier {{filename}} : ({{tasks|length}} tâches)</h3>
+
+<div id="scrollBox2">
+        {% for task in tasks %}
+
+        <div id="tache{{task.id}}" class="center">
+            <h4>Intitulé : {{ task.task }}</h4>
+            <script>
+            var para = document.createElement("p");
+            if ("{{task.complete}}" == "True"){
+                var node = document.createTextNode("Complete");
+            }
+            else{
+                var node = document.createTextNode("Imcomplete");
+            }
+            para.appendChild(node);
+            var element = document.getElementById("tache{{task.id}}");
+            element.appendChild(para);
+            </script>
+            <p>Due le : {{task.due.strftime("%Y-%m-%d")}}</p>
+        </div>
+         <hr>
+    {% endfor %}
+    </div>
+    <br>
+    <a href="handle_import_csv/{{filename}}"><button> Enregistrer </button></a>
+
+
+{% endblock %}

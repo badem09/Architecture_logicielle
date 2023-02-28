@@ -1,32 +1,32 @@
 import csv
 import dataclasses
 import io
+import os
 
 from datetime import datetime
 
-from toudou.models import create_todo, get_todos, Todo
+import models
 
 
-def export_to_csv() -> str:
-    output = io.StringIO()
-    csv_writer = csv.DictWriter(
-        output,
-        fieldnames=[f.name for f in dataclasses.fields(Todo)]
-    )
-    for todo in get_todos():
-        csv_writer.writerow(dataclasses.asdict(todo))
-    return output.getvalue()
+def export_to_csv(todos=[]) -> str:
+    if not todos:
+        todos = models.get_todos()
+    with open("todo.csv", "w", encoding='UTF8', newline='') as f:
+        writer = csv.writer(f)
+        writer.writerow(["id", "task", "complete", "due"])
+        for t in todos:
+            writer.writerow([t.id, t.task, t.complete, t.due])
+    return os.path.abspath(f.name)
 
+def import_from_csv(file:str,tasks=[]) -> None:
 
-def import_from_csv(data: str) -> None:
-    with io.StringIO(data) as csvfile:
-        csv_reader = csv.DictReader(
-            csvfile,
-            fieldnames=[f.name for f in dataclasses.fields(Todo)]
-        )
-        for row in csv_reader:
-            create_todo(
-                task=row["task"],
-                due=datetime.fromisoformat(row["due"]) if row["due"] else None,
-                complete=bool(row["complete"])
-            )
+    with open(file, 'r') as file:
+        i = 0
+        csvreader = csv.reader(file, delimiter=',')
+        for r in csvreader:
+            if i > 0:
+                date = [int(e) for e in r[3].split(' ')[0].split('-')]
+                tasks.append(models.Todo(int(r[0]), r[1], True if r[2] == 'True' else False,
+                                            datetime(date[0], date[1], date[2])))
+            i += 1
+    return tasks
