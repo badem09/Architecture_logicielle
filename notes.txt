@@ -2,7 +2,10 @@ https://kathode.neocities.org/
 
 Des fois ca bug donc fermer powershell et le réouvrir
 
-Pour utiliser source .venvbinactivate il faut aller dans toudou_startertoudou
+Des fois faut ajouter les modules telecharger avec pip : pdm add [module ajouté]
+ex :pdm add sqlalchemy
+
+Pour utiliser source .venvbinactivate il faut aller dans toudou_stsartertoudou
 Possibe de stocker les taches dans une bd 
 
 Probleme avec les path 
@@ -21,3 +24,18 @@ pour lancer sur windows:
 pip install pdm
 python -m pdm install 
 python -m pdm run toudou
+
+pas la peine de rajouter des fonctionnalites pour grater des points
+va pas rajouter des points
+perfectionner ce qui est demander
+
+ouvrir flask https://stackoverflow.com/questions/17917254/how-to-install-flask-on-windows
+
+selectionner les taches par dates
+https://flask.palletsprojects.com/en/2.2.x/patterns/templateinheritance/?highlight=inheritence
+
+qd on a fais une action : rediriger vers index
+
+remplacer bouton ajout tache avec un plus
+Faire des boutons retours
+
