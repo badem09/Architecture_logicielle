@@ -88,21 +88,13 @@
 }
 
 #scrollBox {
-    position: absolute;
-    height: 65%;
-    min-height: 65%;
-    width: 50%;
-    min-width: 50%;
+    height: 50vh;
     border:1px solid black;
     overflow-y:scroll;
 }
 
 #scrollBox2 {
-    height: 50%;
-    min-height: 50%;
-    max-height: 50%
-    width: 100%;
-    min-width: 100%;
+    height: 60vh;
     border:1px solid black;
     overflow-y:scroll;
 }
