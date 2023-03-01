@@ -5,6 +5,11 @@ import models
 
 
 def export_to_csv(todos=[]) -> str:
+    """
+    Exporte les tâches dans un fichier csv 'todo.csv'.
+    path : toudou/src/toudou
+    Attention: écrase le fichier todos.csv s'il existe déja
+    """
     if not todos:
         todos = models.get_todos()
     with open("todo.csv", "w", encoding='UTF8', newline='') as f:
@@ -16,13 +21,18 @@ def export_to_csv(todos=[]) -> str:
 
 
 def import_from_csv(file: str, tasks=[]) -> list[models.Todo]:
+    """
+    Importe les tâches contenue dans le fichier [file].
+    Retourne une liste d'objets Todo
+    """
     with open(file, 'r') as file:
         i = 0
         csvreader = csv.reader(file, delimiter=',')
         for r in csvreader:
-            if i > 0:
+            if i > 0:  # to avoid header
                 date = [int(e) for e in r[3].split(' ')[0].split('-')]
-                tasks.append(models.Todo(int(r[0]), r[1], True if r[2] == 'True' else False,
-                                         datetime(date[0], date[1], date[2])))
+                tasks.append(models.Todo(id=int(r[0]), task=r[1],
+                                         complete=True if r[2] == 'True' else False,
+                                         due=datetime(date[0], date[1], date[2])))
             i += 1
     return tasks
