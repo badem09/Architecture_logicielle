@@ -1,11 +1,9 @@
 import csv
-
 from dataclasses import dataclass
 from datetime import datetime
 from typing import Optional
-
 import sqlalchemy as db
-from sqlalchemy import create_engine, MetaData, Table, Column, Integer, String, Boolean, DateTime, select
+from sqlalchemy import create_engine, MetaData, Table, Column, Integer, String, Boolean, DateTime
 
 TODO_FOLDER = "db"
 metadata_obj = MetaData()
@@ -26,6 +24,7 @@ class Todo:
     task: str
     complete: bool
     due: Optional[datetime]
+
 
 def init_db() -> None:
     metadata_obj.create_all(engine)
@@ -83,7 +82,6 @@ def get_todo(par_id: int) -> Todo | bool:
     with engine.connect() as conn:
         result = conn.execute(requete).fetchall()
         conn.commit()
-    print("result  ", result)
     if result:
         return Todo(result[0][0], result[0][1], result[0][2], result[0][3])
     return False
@@ -94,7 +92,7 @@ def get_todos() -> list:
     with engine.connect() as conn:
         result = conn.execute(requete).fetchall()
         conn.commit()
-    return result
+    return sorted(result,key=lambda x : x[3])
 
     # Autre methode :
     # requete = select(todo_table)
