@@ -1,69 +1,165 @@
-import click
+import flask
 from datetime import datetime
+
+app = flask.Flask(__name__)
+app.secret_key = "secret key"
+
 import models
 import services
 
-
-@click.group()
-def cli():
-    pass
+models.init_db()
 
 
-@cli.command()
-def init_db():
-    models.init_db()
+@app.route('/')
+def redirect_index() -> str:
+    """
+    Redirection vers la page 'index.html'
+    """
+    taches = models.get_todos()
+    return flask.render_template('index.html', tasks=taches)
 
 
-@cli.command()
-@click.option("-t", "--task", prompt="Your task", help="The task to remember.")
-@click.option("-d", "--due", type=click.DateTime(), default=None, help="Due date of the task.")
-def create(task: str, due: datetime):
-    models.create_todo(task, due=due)
+@app.route('/completer/<int:id>')
+def completer(id: int) -> str:
+    """
+    Modifie le status d'une tâches en "Complétée" (achevée) et redirige vers la page 'index.html'
+    (Rafraichssement de la page)
+    """
+    models.complete_todo(id)
+    return flask.render_template('index.html', tasks=models.get_todos())
 
 
-@cli.command()
-@click.argument('id',  type=click.INT)
-def get(id: int):
-    click.echo(models.get_todo(id))
+@app.route('/redirect_modifier/<int:id>')
+def redirect_modifier(id) -> str:
+    """
+    Redirection vers la page 'modifier.html'
+    """
+    return flask.render_template('modifier.html', task=models.get_todo(id))
 
 
-@cli.command()
-@click.option("--as-csv", is_flag=True, help="Ouput a CSV string.")
-def get_all(as_csv: bool):
-    if as_csv:
-        click.echo(services.export_to_csv())
-    else:
-        click.echo(models.get_todos())
-
-
-@cli.command()
-@click.argument('file')
-def import_csv(file: str):
-    tasks = services.import_from_csv(file)
-    for t in tasks:
-        models.write_to_bd(t)
-    click.echo(str(len(tasks)) + " taches ont bien été enregistrés")
-
-
-@cli.command()
-def export_csv():
-    services.export_to_csv()
-
-@cli.command()
-@click.option("--id", required=True, type=click.INT, help="Todo's id.")
-@click.option("-c", "--complete", required=True, type=click.BOOL, help="Todo's id.")
-@click.option("-t", "--task", prompt="Your task", help="The task to remember.")
-@click.option("-d", "--due", type=click.DateTime(), default=None, help="Due date of the task.")
-def update(id: int, complete: bool, task: str, due: datetime):
-    models.update_todo(id, task, complete, due)
-
-
-@cli.command()
-@click.option("--id", required=True, type=click.INT, help="Todo's id.")
-def delete(id: int):
+@app.route('/supprimer/<int:id>')
+def supprimer(id: int) -> str:
+    """
+    Supprime une tâche et redirige vers la page 'index.html'
+    (Rafraichssement de la page)
+    """
     models.delete_todo(id)
+    taches = models.get_todos()
+    return flask.render_template('index.html', tasks=taches)
 
-@cli.command()
-def delete_all():
+
+@app.route('/modifier', methods=['POST'])
+def modifier() -> str:
+    """
+    Modifie une tâche à partir des entrées du formulaire de la page 'modifier.html'
+    et renvoie vers la page 'index.html'
+    """
+    if flask.request.method == 'POST':
+        tab = flask.request.form
+        id = tab.get("id")
+
+        for e in tab.values():  # Vérifie que tous les champs sont remplis
+            if e == "":
+                flask.flash("Un des champs n'est pas remplit !", "error")
+                return flask.render_template('modifier.html', task=models.get_todo(id))
+
+        intitule = tab.get("intitule")
+        status = True if tab.get("status") == 'Complétée' else False
+        date = tab.get("date")
+        models.update_todo(id, intitule, status, date)
+
+    taches = models.get_todos()
+    return flask.render_template('index.html', tasks=taches)
+
+
+@app.route('/redirect_ajouter')
+def redirect_ajouter() -> str:
+    """
+    Redirection vers la page 'ajouter.html'
+    """
+    return flask.render_template('ajouter.html')
+
+
+@app.route('/ajout', methods=['POST'])
+def ajout() -> str:
+    """
+    Ajoute une tâche à partir des entrées du formulaire de la page 'ajout.html'
+    et refdirige vers la page 'index.html'
+    """
+    if flask.request.method == 'POST':
+        tab = flask.request.form
+        intitule = tab.get("intitule")
+        liste_date = tab.get("date").split("-")
+        date = datetime(int(liste_date[0]), int(liste_date[1]), int(liste_date[2]))
+        models.create_todo(task=intitule, complete=False, due=date)
+    taches = models.get_todos()
+    return flask.render_template('index.html', tasks=taches)
+
+
+@app.route('/tous_supprimer')
+def tous_supprimer():
+    """
+    Supprime toutes les tâches enregistrées et redirige vers la page 'index.html'
+    """
     models.delete_all()
+    return flask.render_template('index.html', tasks=[])
 
+
+@app.route('/redirect_import_csv')
+def redirect_import_csv():
+    """
+    Redirection vers la page 'import_csv.html'
+    """
+    return flask.render_template('import_csv.html', tasks=[], filename="")
+
+
+@app.route('/import_csv', methods=['POST'])
+@app.route('/import_csv/<filename>')
+def import_csv(filename="") -> str:
+    """
+    Importe les tâches contenue dans le fichier [filename] et selon l'appel de fonction,
+    affiche les tâches (Formulaire)
+    enregistre les tâches (boutton "Enregistrer' de la page 'import_csv.html') et redirige vers 'index.html'
+    """
+    # creer custom conveter : https://exploreflask.com/en/latest/views.html#url-converters
+
+    if flask.request.method == 'POST': #Affiche les tâches dans le scrollBox
+        tab = flask.request.files
+        f = tab["file"]
+        tasks = services.import_from_csv(f.filename)
+        filename = f.filename
+        return flask.render_template('import_csv.html', tasks=tasks, filename=filename)
+    else: #Enregistre les tâches et redirige vers 'index.html'
+        tasks = services.import_from_csv(filename)
+        for t in tasks:
+            models.write_to_bd(t)
+        tasks = models.get_todos()
+        return flask.render_template('index.html', tasks=tasks)
+
+
+@app.route('/redirect_export_csv')
+def redirect_export_csv() -> str:
+    """
+    Redirige vers la page 'export_csv'.
+    """
+    return flask.render_template('export_csv.html', tasks=models.get_todos())
+
+
+@app.route('/export_csv', methods=['POST'])
+def export_csv():
+    """
+    Récupere les tâches à exporter et les exportes via 'services".
+    Attention: écrase le fichier todos.csv s'il existe déja
+    """
+    tasks = []
+    if flask.request.method == 'POST':
+        liste_id = flask.request.form.getlist("task")
+        tasks = [models.get_todo(int(id)) for id in liste_id]
+        path = services.export_to_csv(tasks)
+        flask.flash("Les tàches séléctionnées ont bien été exportées ici : \n" + path)
+
+    return flask.render_template('export_csv.html', tasks=models.get_todos())
+
+
+if __name__ == '__main__':
+    app.run(debug=True)
