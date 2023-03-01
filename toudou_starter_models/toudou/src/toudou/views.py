@@ -22,7 +22,7 @@ def create(task: str, due: datetime):
 
 
 @cli.command()
-@click.option("--id", required=True, type=click.INT, help="Todo's id.")
+@click.argument('id',  type=click.INT)
 def get(id: int):
     click.echo(models.get_todo(id))
 
@@ -62,3 +62,8 @@ def update(id: int, complete: bool, task: str, due: datetime):
 @click.option("--id", required=True, type=click.INT, help="Todo's id.")
 def delete(id: int):
     models.delete_todo(id)
+
+@cli.command()
+def delete_all():
+    models.delete_all()
+
