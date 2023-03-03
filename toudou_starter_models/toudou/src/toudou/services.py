@@ -20,11 +20,13 @@ def export_to_csv(todos=[]) -> str:
     return os.path.abspath(f.name)
 
 
-def import_from_csv(file: str, tasks=[]) -> list[models.Todo]:
+def import_from_csv(file: str, tasks=None) -> list[models.Todo]:
     """
     Importe les tâches contenue dans le fichier [file].
     Retourne une liste d'objets Todo
     """
+    if not tasks:
+        tasks = []
     with open(file, 'r') as file:
         i = 0
         csvreader = csv.reader(file, delimiter=',')
