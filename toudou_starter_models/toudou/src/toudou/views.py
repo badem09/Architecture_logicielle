@@ -28,15 +28,6 @@ def completer(id: int) -> str:
     models.complete_todo(id)
     return flask.render_template('index.html', tasks=models.get_todos())
 
-
-@app.route('/redirect_modifier/<int:id>')
-def redirect_modifier(id) -> str:
-    """
-    Redirection vers la page 'modifier.html'
-    """
-    return flask.render_template('modifier.html', task=models.get_todo(id))
-
-
 @app.route('/supprimer/<int:id>')
 def supprimer(id: int) -> str:
     """
@@ -46,6 +37,16 @@ def supprimer(id: int) -> str:
     models.delete_todo(id)
     taches = models.get_todos()
     return flask.render_template('index.html', tasks=taches)
+
+
+
+@app.route('/redirect_modifier/<int:id>')
+def redirect_modifier(id) -> str:
+    """
+    Redirection vers la page 'modifier.html'
+    """
+    return flask.render_template('modifier.html', task=models.get_todo(id))
+
 
 
 @app.route('/modifier', methods=['POST'])
@@ -60,7 +61,7 @@ def modifier() -> str:
 
         for e in tab.values():  # Vérifie que tous les champs sont remplis
             if e == "":
-                flask.flash("Un des champs n'est pas remplit !", "error")
+                flask.flash("Tous les champs ne sont pas remplit !", "error")
                 return flask.render_template('modifier.html', task=models.get_todo(id))
 
         intitule = tab.get("intitule")
@@ -88,12 +89,17 @@ def ajout() -> str:
     """
     if flask.request.method == 'POST':
         tab = flask.request.form
-        intitule = tab.get("intitule")
-        liste_date = tab.get("date").split("-")
-        date = datetime(int(liste_date[0]), int(liste_date[1]), int(liste_date[2]))
-        models.create_todo(task=intitule, complete=False, due=date)
-    taches = models.get_todos()
-    return flask.render_template('index.html', tasks=taches)
+        for e in tab.values():# Vérifie que tous les champs sont remplis
+            if e == "":
+                flask.flash("Tous les champs ne sont pas remplit !", "error")
+                return flask.render_template('ajouter.html')
+        else:
+            intitule = tab.get("intitule")
+            liste_date = tab.get("date").split("-")
+            date = datetime(int(liste_date[0]), int(liste_date[1]), int(liste_date[2]))
+            models.create_todo(task=intitule, complete=False, due=date)
+            taches = models.get_todos()
+            return flask.render_template('index.html', tasks=taches)
 
 
 @app.route('/tous_supprimer')
