@@ -87,14 +87,18 @@
   display: block;
 }
 
-#scrollBox {
+.scrollBox {
     height: 50vh;
     border:1px solid black;
     overflow-y:scroll;
 }
 
-#scrollBox2 {
+.scrollBox2 {
     height: 60vh;
     border:1px solid black;
     overflow-y:scroll;
+}
+
+.divform * {
+  margin: 6px 0;
 }
