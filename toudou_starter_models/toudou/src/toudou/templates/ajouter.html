@@ -1,6 +1,14 @@
 {% extends 'base.html' %}
 {% block content %}
 
+{% with messages = get_flashed_messages() %}
+  {% if messages %}
+
+	    <script>alert("{{ messages[0] }}");</script>
+
+  {% endif %}
+{% endwith %}
+
 <div style="display:flex; justify-content: center;" class="form">
 <form action="{{ url_for('ajout') }}" method="post">
     <div>
