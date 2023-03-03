@@ -33,7 +33,7 @@
 </script>
 <br><br>
 <form action="{{ url_for('export_csv') }}" method="post">
-    <div id="scrollBox">
+    <div class="scrollBox">
         <fieldset>
             {% for task in tasks %}
             <div id="tache{{task.id}}" class="center" onclick="task{{task.id}}.click()" style="border:1px solid black;">

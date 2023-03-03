@@ -5,7 +5,7 @@
     <a href="/redirect_ajouter"><button>Nouvelle tache</button></a>
     <a href="/tous_supprimer" onclick="return confirm('Are you sure you to delete all the tasks?');"><button style="float: right;">Tous supprimer</button></a>
     <br><br>
-    <div id="scrollBox2">
+    <div class="scrollBox2">
         {% for task in tasks %}
         <div id="tache{{task.id}}" class="center">
             <h4>Intitulé : {{ task.task }}</h4>
