@@ -19,8 +19,8 @@ https://roytuts.com/flash-message-management-in-python-flask/-->
     </div>
     <label for="status">Status : </label>
     <select id="status">
-        <option name="done"> Complétée </option>
-        <option name="undone"> Imcompléte </option>
+        <option name="done" {{"selected" if task.complete}}> Compléte </option>
+        <option name="undone" {{"selected" if not task.complete}}> Imcompléte </option>
     </select>
     <div>
         <label for="date"> Date </label>
