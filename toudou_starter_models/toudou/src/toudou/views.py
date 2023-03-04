@@ -133,8 +133,14 @@ def import_csv(filename="") -> str:
     if flask.request.method == 'POST':  # Affiche les tâches dans le scrollBox
         tab = flask.request.files
         f = tab["file"]
-        tasks = services.import_from_csv(f.filename)
-        return flask.render_template('import_csv.html', tasks=tasks, filename=f.filename)
+        try: # En cas d'erreur de format
+            tasks = services.import_from_csv(f.filename)
+            return flask.render_template('import_csv.html', tasks=tasks, filename=f.filename)
+        except:
+            flask.flash("Problème de format du fichier csv. \n Pour plus "
+                        "d informations, consultez le README", "error")
+            return flask.render_template('import_csv.html', tasks=[], filename="")
+
 
     else:  # Enregistre les tâches et redirige vers 'index.html'
         tasks = services.import_from_csv(filename)
