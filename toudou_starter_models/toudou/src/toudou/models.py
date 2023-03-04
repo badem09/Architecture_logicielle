@@ -3,7 +3,7 @@ from dataclasses import dataclass
 from datetime import datetime
 from typing import Optional, List
 import sqlalchemy as db
-from sqlalchemy import create_engine, MetaData, Table, Column, Integer, String, Boolean,  Row, DATE, Date,DateTime
+from sqlalchemy import create_engine, MetaData, Table, Column, Integer, String, Boolean, Row, DATE, Date, DateTime
 from sqlalchemy.engine.result import _TP
 
 TODO_FOLDER = "db"
@@ -26,16 +26,29 @@ class Todo:
     complete: bool
     due: Optional[datetime]
 
+    def __eq__(self, other):
+        return self.due.strftime(("%d-%m-%Y")) == other.due.strftime(("%d-%m-%Y")) and self.task == other.task
+
 
 def init_db() -> None:
     metadata_obj.create_all(engine)
+
+
+def exist(todo: Todo) -> bool:
+    todos = get_todos()
+    for t in todos:
+        if todo == t:
+            return True
+    return False
 
 
 def write_to_bd(todo: Todo) -> bool:
     """
     Enregistre une tâche [todo] à la base de données si son id n'y est pas.
     """
-    if not get_todo(todo.id):
+    print("\n",todo, exist(todo))
+    if not exist(todo):
+        todo.id = get_next_id() if get_todo(todo.id) else todo.id
         requete = db.Insert(todo_table).values(id=todo.id, task=todo.task, complete=todo.complete, due=todo.due)
         with engine.connect() as conn:
             conn.execute(requete)
@@ -102,7 +115,9 @@ def get_todos() -> list:
     with engine.connect() as conn:
         result = conn.execute(requete).fetchall()
         conn.commit()
-    return sorted(result, key=lambda x: x[3])
+    if result:
+        return sorted(result, key=lambda x: x[3])
+    return []
     # Autre methode :
     # requete = select(todo_table)
     # result = engine.connect().execute(requete).fetchall()
