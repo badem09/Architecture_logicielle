@@ -40,23 +40,21 @@
                 <input type="checkbox" name="task" id="task{{task.id}}" value="{{task.id}}"/><br />
                 <h4>Intitulé : {{ task.task }}</h4>
                 <script>
-                var para = document.createElement("p");
-                if ("{{task.complete}}" == "True"){
-                var node = document.createTextNode("Complete");
-                }
-                else{
-                var node = document.createTextNode("Imcomplete");
-                }
-                para.appendChild(node);
-                var element = document.getElementById("tache{{task.id}}");
-                element.appendChild(para);
+                    var para = document.createElement("p");
+                    if ("{{task.complete}}" == "True"){
+                    var node = document.createTextNode("Complete");
+                    }
+                    else{
+                    var node = document.createTextNode("Imcomplete");
+                    }
+                    para.appendChild(node);
+                    var element = document.getElementById("tache{{task.id}}");
+                    element.appendChild(para);
                 </script>
                 <p>Due le : {{task.due.strftime("%Y-%m-%d")}}</p>
                </div>
              <hr>
                     {% endfor %}
-
-
         </fieldset>
     </div>
     <br>

@@ -10,22 +10,21 @@
         <div id="tache{{task.id}}" class="center">
             <h4>Intitulé : {{ task.task }}</h4>
             <script>
-            var para = document.createElement("p");
-            if ("{{task.complete}}" == "True"){
-                var node = document.createTextNode("Complete");
-            }
-            else{
-                var node = document.createTextNode("Imcomplete");
-            }
-            para.appendChild(node);
-            var element = document.getElementById("tache{{task.id}}");
-            element.appendChild(para);
+                var para = document.createElement("p");
+                if ("{{task.complete}}" == "True"){
+                    var node = document.createTextNode("Complete");
+                }
+                else{
+                    var node = document.createTextNode("Imcomplete");
+                }
+                para.appendChild(node);
+                var element = document.getElementById("tache{{task.id}}");
+                element.appendChild(para);
             </script>
             <p>Due le : {{task.due.strftime("%d-%m-%Y")}}</p>
             <a href="/completer/{{task.id}}" onclick="return confirm('Are you sure you complete this task');"><input type="submit" name="completer" value="Completer la tâche"></a>
             <a href="/redirect_modifier/{{task.id}}"><input type="submit" name="modifier" value="Modifier"></a>
             <a href="/supprimer/{{task.id}}" onclick="return confirm('Are you sure you wish to delete?');"><input type="submit" name="supprimer" value="Supprimer"></a>
-
         </div>
          <hr>
     {% endfor %}

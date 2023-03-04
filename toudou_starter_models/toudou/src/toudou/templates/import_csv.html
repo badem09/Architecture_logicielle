@@ -26,21 +26,21 @@
 <h3>Contenu du fichier {{filename}} : ({{tasks|length}} tâches)</h3>
 
 <div class="scrollBox">
-        {% for task in tasks %}
+    {% for task in tasks %}
 
         <div id="tache{{task.id}}" class="center">
             <h4>Intitulé : {{ task.task }}</h4>
             <script>
-            var para = document.createElement("p");
-            if ("{{task.complete}}" == "True"){
-                var node = document.createTextNode("Complete");
-            }
-            else{
-                var node = document.createTextNode("Imcomplete");
-            }
-            para.appendChild(node);
-            var element = document.getElementById("tache{{task.id}}");
-            element.appendChild(para);
+                var para = document.createElement("p");
+                if ("{{task.complete}}" == "True"){
+                    var node = document.createTextNode("Complete");
+                }
+                else{
+                    var node = document.createTextNode("Imcomplete");
+                }
+                para.appendChild(node);
+                var element = document.getElementById("tache{{task.id}}");
+                element.appendChild(para);
             </script>
             <p>Due le : {{task.due.strftime("%d-%m-%Y")}}</p>
         </div>
@@ -48,7 +48,7 @@
     {% endfor %}
     </div>
     <br>
-    {% if filename %}
+    {% if filename %} <!-- Si l'user à déja chargé les tâches d'un fichier csv -->
         <a href="import_csv/{{filename}}"><button> Enregistrer </button></a>
     {% endif %}
 
