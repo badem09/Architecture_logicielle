@@ -2,12 +2,20 @@
 
 {% block content %}
 
+{% with messages = get_flashed_messages() %}
+  {% if messages %}
+
+	    <script>alert("{{ messages[0] }}");</script>
+
+  {% endif %}
+{% endwith %}
+
 <form action="{{ url_for('import_csv') }}" method="post" enctype="multipart/form-data">
     <br>
     <div>
         <label for="file">Sélectionner le fichier à envoyer</label>
         <br>
-        <input type="file" id="file" name="file"accept="*,.csv">
+        <input type="file" id="file" name="file" accept="*,.csv" required="required">
     </div>
     <br>
     <div>
@@ -34,13 +42,14 @@
             var element = document.getElementById("tache{{task.id}}");
             element.appendChild(para);
             </script>
-            <p>Due le : {{task.due.strftime("%Y-%m-%d")}}</p>
+            <p>Due le : {{task.due.strftime("%d-%m-%Y")}}</p>
         </div>
          <hr>
     {% endfor %}
     </div>
     <br>
-    <a href="import_csv/{{filename}}"><button> Enregistrer </button></a>
-
+    {% if filename %}
+        <a href="import_csv/{{filename}}"><button> Enregistrer </button></a>
+    {% endif %}
 
 {% endblock %}

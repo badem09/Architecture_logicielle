@@ -30,11 +30,13 @@ def import_from_csv(file: str, tasks=None) -> list[models.Todo]:
     with open(file, 'r') as file:
         i = 0
         csvreader = csv.reader(file, delimiter=',')
-        for r in csvreader:
+        for ligne in csvreader:
             if i > 0:  # to avoid header
-                date = [int(e) for e in r[3].split(' ')[0].split('-')]
-                tasks.append(models.Todo(id=int(r[0]), task=r[1],
-                                         complete=True if r[2] == 'True' else False,
+                print(ligne)
+                date = [int(e) for e in ligne[3].split('-')]
+                print(date)
+                tasks.append(models.Todo(id=int(ligne[0]), task=ligne[1],
+                                         complete=True if ligne[2] == 'True' else False,
                                          due=datetime(date[0], date[1], date[2])))
             i += 1
     return tasks

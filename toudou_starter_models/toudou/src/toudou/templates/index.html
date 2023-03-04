@@ -21,7 +21,7 @@
             var element = document.getElementById("tache{{task.id}}");
             element.appendChild(para);
             </script>
-            <p>Due le : {{task.due.strftime("%Y-%m-%d")}}</p>
+            <p>Due le : {{task.due.strftime("%d-%m-%Y")}}</p>
             <a href="/completer/{{task.id}}" onclick="return confirm('Are you sure you complete this task');"><input type="submit" name="completer" value="Completer la tâche"></a>
             <a href="/redirect_modifier/{{task.id}}"><input type="submit" name="modifier" value="Modifier"></a>
             <a href="/supprimer/{{task.id}}" onclick="return confirm('Are you sure you wish to delete?');"><input type="submit" name="supprimer" value="Supprimer"></a>

@@ -1,5 +1,6 @@
 import flask
 from datetime import datetime
+import os
 
 app = flask.Flask(__name__)
 app.secret_key = "secret key"
@@ -28,6 +29,7 @@ def completer(id: int) -> str:
     models.complete_todo(id)
     return flask.render_template('index.html', tasks=models.get_todos())
 
+
 @app.route('/supprimer/<int:id>')
 def supprimer(id: int) -> str:
     """
@@ -39,14 +41,12 @@ def supprimer(id: int) -> str:
     return flask.render_template('index.html', tasks=taches)
 
 
-
 @app.route('/redirect_modifier/<int:id>')
 def redirect_modifier(id) -> str:
     """
     Redirection vers la page 'modifier.html'
     """
     return flask.render_template('modifier.html', task=models.get_todo(id))
-
 
 
 @app.route('/modifier', methods=['POST'])
@@ -89,7 +89,7 @@ def ajout() -> str:
     """
     if flask.request.method == 'POST':
         tab = flask.request.form
-        for e in tab.values():# Vérifie que tous les champs sont remplis
+        for e in tab.values():  # Vérifie que tous les champs sont remplis
             if e == "":
                 flask.flash("Tous les champs ne sont pas remplit !", "error")
                 return flask.render_template('ajouter.html')
@@ -124,23 +124,23 @@ def redirect_import_csv():
 def import_csv(filename="") -> str:
     """
     Importe les tâches contenue dans le fichier [filename] et selon l'appel de fonction,
-    affiche les tâches (Formulaire)
-    enregistre les tâches (boutton "Enregistrer' de la page 'import_csv.html') et redirige vers 'index.html'
+    affiche les tâches (appel avec le Formulaire) ou
+    enregistre les tâches et redirige vers 'index.html'(appel avec le boutton "Enregistrer'
+    de la page 'import_csv.html')
     """
     # creer custom conveter : https://exploreflask.com/en/latest/views.html#url-converters
 
-    if flask.request.method == 'POST': #Affiche les tâches dans le scrollBox
+    if flask.request.method == 'POST':  # Affiche les tâches dans le scrollBox
         tab = flask.request.files
         f = tab["file"]
         tasks = services.import_from_csv(f.filename)
-        filename = f.filename
-        return flask.render_template('import_csv.html', tasks=tasks, filename=filename)
-    else: #Enregistre les tâches et redirige vers 'index.html'
+        return flask.render_template('import_csv.html', tasks=tasks, filename=f.filename)
+
+    else:  # Enregistre les tâches et redirige vers 'index.html'
         tasks = services.import_from_csv(filename)
         for t in tasks:
             models.write_to_bd(t)
-        tasks = models.get_todos()
-        return flask.render_template('index.html', tasks=tasks)
+        return flask.render_template('index.html', tasks=models.get_todos())
 
 
 @app.route('/redirect_export_csv')
@@ -157,12 +157,15 @@ def export_csv():
     Récupere les tâches à exporter et les exportes via 'services".
     Attention: écrase le fichier todos.csv s'il existe déja
     """
-    tasks = []
     if flask.request.method == 'POST':
         liste_id = flask.request.form.getlist("task")
-        tasks = [models.get_todo(int(id)) for id in liste_id]
-        path = services.export_to_csv(tasks)
-        flask.flash("Les tàches séléctionnées ont bien été exportées ici : \n" + path)
+
+        if len(liste_id) < 1:
+            flask.flash("Aucune tâche n'a été séléctionnée", "error")
+        else:
+            tasks = [models.get_todo(int(id)) for id in liste_id]
+            path = services.export_to_csv(tasks)
+            flask.flash("Les tàches séléctionnées ont bien été exportées ici : \n" + path)
 
     return flask.render_template('export_csv.html', tasks=models.get_todos())
 

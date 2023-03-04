@@ -8,6 +8,6 @@ src/Toudou.egg-info/requires.txt
 src/Toudou.egg-info/top_level.txt
 src/toudou/__init__.py
 src/toudou/models.py
-src/toudou/page.py
+src/toudou/old_views.py
 src/toudou/services.py
 src/toudou/views.py

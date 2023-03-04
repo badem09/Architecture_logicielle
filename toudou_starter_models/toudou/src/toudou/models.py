@@ -3,7 +3,7 @@ from dataclasses import dataclass
 from datetime import datetime
 from typing import Optional, List
 import sqlalchemy as db
-from sqlalchemy import create_engine, MetaData, Table, Column, Integer, String, Boolean, DateTime, Row
+from sqlalchemy import create_engine, MetaData, Table, Column, Integer, String, Boolean,  Row, DATE, Date,DateTime
 from sqlalchemy.engine.result import _TP
 
 TODO_FOLDER = "db"
@@ -15,7 +15,7 @@ todo_table = Table(
     Column("id", Integer, primary_key=True),
     Column("task", String(1000), nullable=False),
     Column("complete", Boolean, nullable=False),
-    Column("due", DateTime, nullable=True)
+    Column("due", Date, nullable=True)
 )
 
 
