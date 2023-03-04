@@ -17,11 +17,16 @@
     </div>
     <div>
         <label for="date"> Date </label>
-        <input type="date" id="date" name="date"/>
+        <input type="date" placeholder="dd-mm-yyyy" id="date" name="date"/>
+        <script>
+            document.getElementById('date').valueAsDate = new Date();
+        </script>
     </div>
     <input type="submit" id="ok" value="Envoyer">
 </form>
 </div>
+
+
 
 
 
