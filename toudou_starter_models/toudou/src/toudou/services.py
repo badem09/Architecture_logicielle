@@ -10,7 +10,7 @@ def export_to_csv(todos=[]) -> str:
     path : toudou/src/toudou
     Attention: écrase le fichier todos.csv s'il existe déja
     """
-    n = len(os.listdir("csv"))
+    n = len(os.listdir("csv")) + 1
     if not todos:
         todos = models.get_todos()
     with open("csv/todo"+str(n)+".csv", "w", encoding='UTF8', newline='') as f:
