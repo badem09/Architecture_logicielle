@@ -1,10 +1,8 @@
-import csv
 from dataclasses import dataclass
 from datetime import datetime
-from typing import Optional, List
+from typing import Optional
 import sqlalchemy as db
-from sqlalchemy import create_engine, MetaData, Table, Column, Integer, String, Boolean, Row, DATE, Date, DateTime
-from sqlalchemy.engine.result import _TP
+from sqlalchemy import create_engine, MetaData, Table, Column, Integer, String, Boolean, Date
 
 TODO_FOLDER = "db"
 metadata_obj = MetaData()
@@ -27,7 +25,7 @@ class Todo:
     due: Optional[datetime]
 
     def __eq__(self, other):
-        return self.due.strftime(("%d-%m-%Y")) == other.due.strftime(("%d-%m-%Y")) and self.task == other.task
+        return self.due.strftime("%d-%m-%Y") == other.due.strftime("%d-%m-%Y") and self.task == other.task
 
 
 def init_db() -> None:
@@ -46,7 +44,6 @@ def write_to_bd(todo: Todo) -> bool:
     """
     Enregistre une tâche [todo] à la base de données si son id n'y est pas.
     """
-    print("\n",todo, exist(todo))
     if not exist(todo):
         todo.id = get_next_id() if get_todo(todo.id) else todo.id
         requete = db.Insert(todo_table).values(id=todo.id, task=todo.task, complete=todo.complete, due=todo.due)
