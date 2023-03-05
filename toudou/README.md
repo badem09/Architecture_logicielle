@@ -78,3 +78,5 @@ tâches.
 les modifier est très similaire ce qui entraine de la répétition. Cependant,
 Celles-ci étant 2 fonctionnalités bien différentes et pour respecter le SOC
 je n'ai pas fusionné ces 2 templates (ajouter.html et modifier.html).
+- Lors de l'ajout de tâches ou de leurs importation, les tâches déja présentes 
+(même intitulé et même date) ne sont pas enregistrées.
