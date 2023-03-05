@@ -1,12 +1,13 @@
-# Module Architechture logicielle 
+# Module Architecture logicielle 
 # Projet Toudou
 
 BA Demba INFI2B
 
 ## Installation
 
+Rendez-vous dans le dossier toudou (assurez vous d'être au même niveau que le fichier *pyproject.toml*) 
+et executez la commande suivante:
 
-Dans le dossier du projet, rendez vous dans le dossier toudou et executez la commande suivante:
 ```bash
 $ pdm install 
 ```
@@ -38,6 +39,8 @@ Les fonctionnalités présentes sont :
 - la suppression de tâches
 - l'importation de tâches d'un fichier csv (voir format ci-dessous)
 - l'exportation des tâches dans un fichier csv (1 exportation = 1 nouveau fichier)
+
+Le dossier /templates contient les fichiers .html, /csv les exportations et /static les feuilles de styles
 
 
 ### Importation csv
