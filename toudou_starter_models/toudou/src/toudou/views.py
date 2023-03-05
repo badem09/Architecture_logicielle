@@ -128,8 +128,6 @@ def import_csv(filename="") -> str:
     enregistre les tâches et redirige vers 'index.html'(appel avec le boutton "Enregistrer'
     de la page 'import_csv.html')
     """
-    # creer custom conveter : https://exploreflask.com/en/latest/views.html#url-converters
-
     if flask.request.method == 'POST':  # Affiche les tâches dans le scrollBox
         tab = flask.request.files
         f = tab["file"]
