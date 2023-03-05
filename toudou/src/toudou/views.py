@@ -65,7 +65,8 @@ def modifier() -> str:
                 return flask.render_template('modifier.html', task=models.get_todo(id))
 
         intitule = tab.get("intitule")
-        status = True if tab.get("status") == 'Complétée' else False
+        status = True if tab.get("status") == 'Complète' else False
+        print(status, tab.get("status"))
         date = tab.get("date")
         models.update_todo(id, intitule, status, date)
 
