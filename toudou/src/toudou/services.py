@@ -6,9 +6,7 @@ import models
 
 def export_to_csv(todos=[]) -> str:
     """
-    Exporte les tâches dans un fichier csv 'todo.csv'.
-    path : toudou/src/toudou
-    Attention: écrase le fichier todos.csv s'il existe déja
+    Exporte les tâches dans un nouveau fichier csv 'todo[int].csv'.
     """
     n = len(os.listdir("csv")) + 1
     if not todos:
