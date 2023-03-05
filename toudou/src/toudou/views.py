@@ -3,7 +3,7 @@ from datetime import datetime
 import os
 
 app = flask.Flask(__name__)
-app.secret_key = "secret key"
+app.secret_key = "secret key" # pour utiliser flash
 
 import models
 import services
@@ -66,7 +66,6 @@ def modifier() -> str:
 
         intitule = tab.get("intitule")
         status = True if tab.get("status") == 'Complète' else False
-        print(status, tab.get("status"))
         date = tab.get("date")
         models.update_todo(id, intitule, status, date)
 
@@ -132,7 +131,7 @@ def import_csv(filename="") -> str:
     if flask.request.method == 'POST':  # Affiche les tâches dans le scrollBox
         tab = flask.request.files
         f = tab["file"]
-        try: # En cas d'erreur de format
+        try:  # En cas d'erreur de format
             tasks = services.import_from_csv(f.filename)
             return flask.render_template('import_csv.html', tasks=tasks, filename=f.filename)
         except:

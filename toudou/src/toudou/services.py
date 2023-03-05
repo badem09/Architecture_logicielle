@@ -7,6 +7,7 @@ import models
 def export_to_csv(todos=[]) -> str:
     """
     Exporte les tâches dans un nouveau fichier csv 'todo[int].csv'.
+    [int] dépend du nombre de fichiers csv déja générés
     """
     n = len(os.listdir("csv")) + 1
     if not todos:
@@ -22,7 +23,8 @@ def export_to_csv(todos=[]) -> str:
 def import_from_csv(file: str, tasks=None) -> list[models.Todo]:
     """
     Importe les tâches contenue dans le fichier [file].
-    Retourne une liste d'objets Todo
+    Retourne une liste d'objets Todo.
+    Voir README pour le format du contenu du fichier csv
     """
     if not tasks:
         tasks = []

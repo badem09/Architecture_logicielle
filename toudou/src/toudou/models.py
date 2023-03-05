@@ -25,6 +25,10 @@ class Todo:
     due: Optional[datetime]
 
     def __eq__(self, other):
+        """
+        Assigne la manière de comparer deux objets Todo.
+        Ici compare la date et l'intitulé.
+        """
         return self.due.strftime("%d-%m-%Y") == other.due.strftime("%d-%m-%Y") and self.task == other.task
 
 
@@ -33,6 +37,10 @@ def init_db() -> None:
 
 
 def exist(todo: Todo) -> bool:
+    """
+    Vérfie si un objet Todo similaire est déja enregistré dans la bd.
+    Retourne True si oui, False sinon.
+    """
     todos = get_todos()
     for t in todos:
         if todo == t:
@@ -52,17 +60,6 @@ def write_to_bd(todo: Todo) -> bool:
             conn.commit()
         return True
     return False
-
-
-def update_bd(todo: Todo) -> None:
-    """
-    Modifie une tâche dans la base de données avec son id
-    """
-    requete = db.Update(todo_table).values(id=todo.id, task=todo.task, complete=todo.complete, due=todo.due)
-    requete = requete.where(db.sql.column('id') == todo.id)
-    with engine.connect() as conn:
-        conn.execute(requete)
-        conn.commit()
 
 
 def get_next_id() -> int:
@@ -115,9 +112,17 @@ def get_todos() -> list:
     if result:
         return sorted(result, key=lambda x: x[3])
     return []
-    # Autre methode :
-    # requete = select(todo_table)
-    # result = engine.connect().execute(requete).fetchall()
+
+
+def update_bd(todo: Todo) -> None:
+    """
+    Modifie une tâche dans la base de données avec son id
+    """
+    requete = db.Update(todo_table).values(id=todo.id, task=todo.task, complete=todo.complete, due=todo.due)
+    requete = requete.where(db.sql.column('id') == todo.id)
+    with engine.connect() as conn:
+        conn.execute(requete)
+        conn.commit()
 
 
 def update_todo(id: int, task: str, complete: bool, due: Optional[datetime]) -> None:
@@ -131,6 +136,15 @@ def update_todo(id: int, task: str, complete: bool, due: Optional[datetime]) -> 
         due = due.split("-")
         todo.due = datetime(int(due[0]), int(due[1]), int(due[2])) if due else todo.due  # pourrait être None
         update_bd(todo)
+
+
+def complete_todo(par_id: int) -> None:
+    """
+    Change le champs 'complete' d'un objet Todo en True.
+    """
+    tache = get_todo(par_id)
+    tache.complete = True
+    update_bd(tache)
 
 
 def delete_todo(id: int) -> bool:
@@ -147,15 +161,6 @@ def delete_todo(id: int) -> bool:
             conn.commit()
         return True
     return False
-
-
-def complete_todo(par_id: int) -> None:
-    """
-    Change le champs 'complete' d'un objet Todo en True.
-    """
-    tache = get_todo(par_id)
-    tache.complete = True
-    update_bd(tache)
 
 
 def delete_all() -> None:
