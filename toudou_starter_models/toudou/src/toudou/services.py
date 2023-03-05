@@ -10,9 +10,10 @@ def export_to_csv(todos=[]) -> str:
     path : toudou/src/toudou
     Attention: écrase le fichier todos.csv s'il existe déja
     """
+    n = len(os.listdir("csv"))
     if not todos:
         todos = models.get_todos()
-    with open("todo.csv", "w", encoding='UTF8', newline='') as f:
+    with open("csv/todo"+str(n)+".csv", "w", encoding='UTF8', newline='') as f:
         writer = csv.writer(f)
         writer.writerow(["id", "task", "complete", "due"])
         for t in todos:
@@ -27,7 +28,7 @@ def import_from_csv(file: str, tasks=None) -> list[models.Todo]:
     """
     if not tasks:
         tasks = []
-    with open(file, 'r') as file:
+    with open("csv/"+file, 'r') as file:
         i = 0
         csvreader = csv.reader(file, delimiter=',')
         for ligne in csvreader:
