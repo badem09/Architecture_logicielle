@@ -34,14 +34,13 @@ ouvrir flask https://stackoverflow.com/questions/17917254/how-to-install-flask-o
 selectionner les taches par dates
 https://flask.palletsprojects.com/en/2.2.x/patterns/templateinheritance/?highlight=inheritence
 
-qd on a fais une action : rediriger vers index
-
 remplacer bouton ajout tache avec un plus
 
 Plis simple d'avoir des fonctions de redirection pour charger les tâches
 
 Peut supprimer le formulaire dans imprt_csv
 
-2 fonctions d'update pour la facilité et eviter trop de conversions
+# créer custom conveter : https://exploreflask.com/en/latest/views.html#url-converters
+
 
 
