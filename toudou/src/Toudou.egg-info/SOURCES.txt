@@ -1,9 +1,0 @@
-README.md
-pyproject.toml
-src/toudou.py
-src/Toudou.egg-info/PKG-INFO
-src/Toudou.egg-info/SOURCES.txt
-src/Toudou.egg-info/dependency_links.txt
-src/Toudou.egg-info/entry_points.txt
-src/Toudou.egg-info/requires.txt
-src/Toudou.egg-info/top_level.txt
