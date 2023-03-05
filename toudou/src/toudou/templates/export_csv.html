@@ -1,0 +1,67 @@
+{% extends 'base.html' %}
+
+{% block content %}
+
+{% with messages = get_flashed_messages() %}
+  {% if messages %}
+	    {{ messages[0] }}
+        <br>
+  {% endif %}
+{% endwith %}
+
+
+<h3 style="text-align : center;">Séléctionnez les tâches à exporter</h3>
+<button onclick="select_all()">Tous sélectionner</button>
+<button onclick="deselect_all()">Tous désélectionner</button>
+
+<script type="text/javascript">
+    function select_all(){
+        var ele=document.getElementsByName('task');
+        for(var i=0; i<ele.length; i++){
+            if(ele[i].type=='checkbox')
+                ele[i].checked=true;
+        }
+    }
+
+    function deselect_all(){
+    var ele=document.getElementsByName('task');
+    for(var i=0; i<ele.length; i++){
+        if(ele[i].type=='checkbox')
+            ele[i].checked=false;
+        }
+    }
+</script>
+<br><br>
+<form action="{{ url_for('export_csv') }}" method="post">
+    <div class="scrollBox">
+        <fieldset>
+            {% for task in tasks %}
+            <div id="tache{{task.id}}" class="center" onclick="task{{task.id}}.click()" style="border:1px solid black;">
+                <input type="checkbox" name="task" id="task{{task.id}}" value="{{task.id}}"/><br />
+                <h4>Intitulé : {{ task.task }}</h4>
+                <script>
+                    var para = document.createElement("p");
+                    if ("{{task.complete}}" == "True"){
+                    var node = document.createTextNode("Complete");
+                    }
+                    else{
+                    var node = document.createTextNode("Imcomplete");
+                    }
+                    para.appendChild(node);
+                    var element = document.getElementById("tache{{task.id}}");
+                    element.appendChild(para);
+                </script>
+                <p>Due le : {{task.due.strftime("%Y-%m-%d")}}</p>
+               </div>
+             <hr>
+                    {% endfor %}
+        </fieldset>
+    </div>
+    <br>
+    <input type="submit" value="Submit">
+</form>
+
+
+
+
+{% endblock %}

@@ -1,0 +1,27 @@
+{% extends 'base.html' %}
+{% block content %}
+
+{% with messages = get_flashed_messages() %} <!--Vérification des champs coté serveur-->
+  {% if messages %}
+	    <script>alert("{{ messages[0] }}");</script>
+  {% endif %}
+{% endwith %}
+
+<div style="display:flex; justify-content: center;" class="divform">
+    <form action="{{ url_for('ajout') }}" method="post">
+        <div>
+            <label for="intitule">Intutulé : </label>
+            <input type="text" id="intitule" name="intitule" required="required"><!--Vérification des champs coté client-->
+        </div>
+        <div>
+            <label for="date"> Date </label>
+            <input type="date" placeholder="dd-mm-yyyy" id="date" name="date"/>
+            <script>
+                document.getElementById('date').valueAsDate = new Date();
+            </script>
+        </div>
+        <input type="submit" id="ok" value="Envoyer">
+    </form>
+</div>
+
+{% endblock %}
