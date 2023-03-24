@@ -7,6 +7,7 @@ app.secret_key = os.getenv('TOUDOU_FLASK_SECRET_KEY')
 
 import toudou.models as models
 import toudou.services as services
+from toudou.forms import FormAjouter, FormModifier
 #import models
 #import services
 
@@ -23,6 +24,7 @@ def test():
 
 app.register_blueprint(categories)
 
+#app.config.from_prefixed_env()
 @app.route('/')
 def redirect_index() -> str:
     """
@@ -58,7 +60,13 @@ def redirect_modifier(id) -> str:
     """
     Redirection vers la page 'modifier.html'
     """
-    return flask.render_template('modifier.html', task=models.get_todo(id))
+    task = models.get_todo(id)
+    form = FormModifier()
+    form.task.data = task.task
+    form.status.data = task.complete
+    form.due.data = task.due
+    form.id.data = task.id
+    return flask.render_template('modifier.html', task=task, form=form)
 
 
 @app.route('/modifier', methods=['POST'])
@@ -69,17 +77,22 @@ def modifier() -> str:
     """
     if flask.request.method == 'POST':
         tab = flask.request.form
+        for e,i in tab.items():
+            print(e,i)
+
         id = tab.get("id")
 
         for e in tab.values():  # Vérifie que tous les champs sont remplis
             if e == "":
                 flask.flash("Tous les champs ne sont pas remplit !", "error")
+                #flask.abort(500)
                 return flask.render_template('modifier.html', task=models.get_todo(id))
 
-        intitule = tab.get("intitule")
+        intitule = tab.get("task")
         status = True if tab.get("status") == 'Complétée' else False
-        date = tab.get("date")
+        date = tab.get("due")
         models.update_todo(id, intitule, status, date)
+        print(tab.get("date"))
 
     taches = models.get_todos()
     return flask.render_template('index.html', tasks=taches)
@@ -90,7 +103,8 @@ def redirect_ajouter() -> str:
     """
     Redirection vers la page 'ajouter.html'
     """
-    return flask.render_template('ajouter.html')
+    form = FormAjouter()
+    return flask.render_template('ajouter.html',form=form)
 
 
 @app.route('/ajout', methods=['POST'])
@@ -106,8 +120,8 @@ def ajout() -> str:
                 flask.flash("Tous les champs ne sont pas remplit !", "error")
                 return flask.render_template('ajouter.html')
         else:
-            intitule = tab.get("intitule")
-            liste_date = tab.get("date").split("-")
+            intitule = tab.get("task")
+            liste_date = tab.get("due").split("-")
             date = datetime(int(liste_date[0]), int(liste_date[1]), int(liste_date[2]))
             models.create_todo(task=intitule, complete=False, due=date)
             taches = models.get_todos()

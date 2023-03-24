@@ -15,7 +15,7 @@ echo=config['DEBUG']
 todo_table = Table(
     "todos",
     metadata_obj,
-    Column("id", Integer, primary_key=True, autoincrement=True),
+    Column("id", Integer, primary_key=True),
     Column("task", String(1000), nullable=False),
     Column("complete", Boolean, nullable=False),
     Column("due", Date, nullable=True)
@@ -24,16 +24,10 @@ todo_table = Table(
 
 @dataclass
 class Todo:
+    id: int
     task: str
     complete: bool
     due: Optional[datetime]
-    id: int
-
-    def __init__(self,task,complete,due):
-        self.id = id(self)
-        self.due = due
-        self.task = task
-        self.complete = complete
 
     def __eq__(self, other):
         return self.due.strftime("%d-%m-%Y") == other.due.strftime("%d-%m-%Y") and self.task == other.task
@@ -43,12 +37,21 @@ def init_db() -> None:
     metadata_obj.create_all(engine)
 
 
+def exist(todo: Todo) -> bool:
+    todos = get_todos()
+    for t in todos:
+        if todo == t:
+            return True
+    return False
+
+
 def write_to_bd(todo: Todo) -> bool:
     """
     Enregistre une tâche [todo] à la base de données si son id n'y est pas.
     """
-    if not get_todo(todo.id):
-        requete = db.Insert(todo_table).values(task=todo.task, complete=todo.complete, due=todo.due)
+    if not exist(todo):
+        todo.id = get_next_id() if get_todo(todo.id) else todo.id
+        requete = db.Insert(todo_table).values(id=todo.id, task=todo.task, complete=todo.complete, due=todo.due)
         with engine.connect() as conn:
             conn.execute(requete)
             conn.commit()
@@ -67,11 +70,25 @@ def update_bd(todo: Todo) -> None:
         conn.commit()
 
 
+def get_next_id() -> int:
+    """
+    Génere un nouvel id selon ceux des tâches deja enregistrés (max des id +1).
+    Limite: Si le nombre de tâches devient trop grand.
+    """
+    with engine.connect() as conn:
+        result = conn.execute(db.text("""SELECT MAX(id) FROM todos""")).fetchone()
+        conn.commit()
+    if result[0]:
+        return int(result[0]) + 1
+    return 1
+
+
 def create_todo(task: str, complete: bool = False, due: Optional[datetime] = None) -> None:
     """
     Crée une tâche.
     """
-    todo = Todo(task=task, complete=complete, due=due)
+    id = get_next_id()
+    todo = Todo(id=id, task=task, complete=complete, due=due)
     write_to_bd(todo)
 
 
@@ -87,7 +104,7 @@ def get_todo(par_id: int) -> Todo | bool:
         result = conn.execute(requete).fetchall()
         conn.commit()
     if result:
-        return Todo(task=result[0][1], complete=result[0][2], due=result[0][3])
+        return Todo(result[0][0], result[0][1], result[0][2], result[0][3])
     return False
 
 

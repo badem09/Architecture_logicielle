@@ -9,26 +9,23 @@
 
 <div style="display:flex; justify-content: center;" class="divform">
     <form action="{{ url_for('modifier') }}" method="post">
-        <input type="hidden" name="id" id="id" value="{{task.id}}">
+        {{ form.csrf_token }}
+        {{ form.id }}
         <div>
-            <label for="intitule">Intutulé : </label>
-            <input type="text" id="intitule" name="intitule" value="{{task.task}}" required="required">
+            {{ form.task.label }}
+            {{ form.task }}
         </div>
         <div>
-            <label for="status">Status : </label>
-            <select id="status">
-                {% with selected = "selected" %} <!-- Pour éviter les warning dans PyCharm -->
-                    <option name="done" {{selected if task.complete}}> Complète </option>
-                    <option name="undone" {{selected if not task.complete}}> Imcomplète </option>
-                {% endwith %}
-            </select>
+            {{ form.status.label }}
+            {{ form.status }}
         </div>
         <div>
-            <label for="date"> Date </label>
-            <input type="date" id="date" name="date" value="{{task.due.strftime('%Y-%m-%d')}}">
+            {{ form.due.label }}
+            {{ form.due }}
         </div>
         <input type="submit" id="ok" value="Envoyer">
     </form>
+
 </div>
 
 
