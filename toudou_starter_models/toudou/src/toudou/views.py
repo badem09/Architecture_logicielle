@@ -3,7 +3,7 @@ from datetime import datetime
 import os
 
 app = flask.Flask(__name__)
-app.secret_key = "secret key"
+app.secret_key = os.getenv('TOUDOU_FLASK_SECRET_KEY')
 
 import toudou.models as models
 import toudou.services as services
