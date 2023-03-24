@@ -45,8 +45,6 @@ Peut supprimer le formulaire dans imprt_csv
 # créer custom conveter : https://exploreflask.com/en/latest/views.html#url-converters
 
 
-get next id no
-auto increment
 services / import : suppr i=
 services export :
 exist : pas regarder tous les todos
