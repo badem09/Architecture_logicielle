@@ -4,9 +4,14 @@ from typing import Optional
 import sqlalchemy as db
 from sqlalchemy import create_engine, MetaData, Table, Column, Integer, String, Boolean, Date
 
+from toudou import config
+
 TODO_FOLDER = "db"
 metadata_obj = MetaData()
-engine = create_engine("sqlite:///todos.db", echo=True)
+engine = create_engine(
+config['DATABASE_URL'],
+echo=config['DEBUG']
+)
 todo_table = Table(
     "todos",
     metadata_obj,
