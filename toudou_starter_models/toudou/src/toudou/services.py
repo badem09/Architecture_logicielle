@@ -1,14 +1,13 @@
 import csv
 import os
 from datetime import datetime
-import models
-
+import toudou.models as models
+#import models
 
 def export_to_csv(todos=[]) -> str:
     """
     Exporte les tâches dans un fichier csv 'todo.csv'.
     path : toudou/src/toudou
-    Attention: écrase le fichier todos.csv s'il existe déja
     """
     n = len(os.listdir("csv"))
     if not todos:
