@@ -108,13 +108,11 @@ def get_todos() -> list:
     Retourne une liste de tâches triées par date sous forme de tuple.
     Ex : [(id,task,complete,due),...]
     """
-    requete = todo_table.select()
+    requete = todo_table.select().order_by(db.sql.column("due"))
     with engine.connect() as conn:
         result = conn.execute(requete).fetchall()
         conn.commit()
-    if result:
-        return sorted(result, key=lambda x: x[3])
-    return []
+    return result if result else []
     # Autre methode :
     # requete = select(todo_table)
     # result = engine.connect().execute(requete).fetchall()
