@@ -15,6 +15,8 @@ toujour lancer toudou dans 	rchilogtoudoustartetoudou
 
 pour refaire l'instalation  suppr (en local) les dossiersfichiers qui ont commit Generes instalations) ou branche instalation
 
+PS C:\Users\badem\Documents\infi2\archi_log\toudou_starter_models\toudou\src\toudou>
+python -m pdm run flask --app views run
 
 
 01/02
@@ -41,6 +43,25 @@ Plis simple d'avoir des fonctions de redirection pour charger les tâches
 Peut supprimer le formulaire dans imprt_csv
 
 # créer custom conveter : https://exploreflask.com/en/latest/views.html#url-converters
+
+
+get next id no
+auto increment
+services / import : suppr i=
+services export :
+exist : pas regarder tous les todos
+use get todo(id)
+
+suppr le init bd
+le faire manuellement
+rajouter les click
+
+supprimer les focntions redirect
+plutot mettre direct lurl dans le html
+
+
+lancer le projet : (cette arborecence sinon bugs)
+PS C:\Users\badem\Documents\infi2\archi_log\toudou_starter_models\toudou> pdm run flask --app toudou.views --debug run
 
 
 
