@@ -33,7 +33,7 @@ def import_from_csv(file: str, tasks=None) -> list[models.Todo]:
         for ligne in csvreader:
             if i > 0:  # to avoid header
                 date = [int(e) for e in ligne[3].split('-')]
-                tasks.append(models.Todo(id=int(ligne[0]), task=ligne[1],
+                tasks.append(models.Todo(task=ligne[1],
                                          complete=True if ligne[2] == 'True' else False,
                                          due=datetime(date[0], date[1], date[2])))
             i += 1
