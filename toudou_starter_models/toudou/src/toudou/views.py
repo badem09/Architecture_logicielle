@@ -5,11 +5,23 @@ import os
 app = flask.Flask(__name__)
 app.secret_key = "secret key"
 
-import models
-import services
+import toudou.models as models
+import toudou.services as services
+#import models
+#import services
 
 models.init_db()
 
+categories = flask.Blueprint(
+'categories',
+__name__,
+url_prefix='/categories'
+)
+@categories.route('/')
+def test():
+    return "<h1> Le Blueprint catégories marche bien </h1>"
+
+app.register_blueprint(categories)
 
 @app.route('/')
 def redirect_index() -> str:
