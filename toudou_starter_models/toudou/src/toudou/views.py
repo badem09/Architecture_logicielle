@@ -63,7 +63,8 @@ def redirect_modifier(id) -> str:
     task = models.get_todo(id)
     form = FormModifier()
     form.task.data = task.task
-    form.status.data = task.complete
+    form.status.data = "Complétée" if task.complete else "Incomplète"
+    print(form.status.data)
     form.due.data = task.due
     form.id.data = task.id
     return flask.render_template('modifier.html', task=task, form=form)
@@ -75,27 +76,17 @@ def modifier() -> str:
     Modifie une tâche à partir des entrées du formulaire de la page 'modifier.html'
     et renvoie vers la page 'index.html'
     """
-    if flask.request.method == 'POST':
-        tab = flask.request.form
-        for e,i in tab.items():
-            print(e,i)
-
-        id = tab.get("id")
-
-        for e in tab.values():  # Vérifie que tous les champs sont remplis
-            if e == "":
-                flask.flash("Tous les champs ne sont pas remplit !", "error")
-                #flask.abort(500)
-                return flask.render_template('modifier.html', task=models.get_todo(id))
-
-        intitule = tab.get("task")
-        status = True if tab.get("status") == 'Complétée' else False
-        date = tab.get("due")
+    form = FormModifier()
+    if form.validate_on_submit():
+        id = form.id.data
+        intitule = form.task.data
+        status = True if form.status.data == 'Complétée' else False
+        date = form.due.data
         models.update_todo(id, intitule, status, date)
-        print(tab.get("date"))
+        taches = models.get_todos()
+        return flask.render_template('index.html', tasks=taches)
 
-    taches = models.get_todos()
-    return flask.render_template('index.html', tasks=taches)
+    return flask.render_template('modifier.html', task=models.get_todo(id))
 
 
 @app.route('/redirect_ajouter')
@@ -113,19 +104,14 @@ def ajout() -> str:
     Ajoute une tâche à partir des entrées du formulaire de la page 'ajout.html'
     et refdirige vers la page 'index.html'
     """
-    if flask.request.method == 'POST':
-        tab = flask.request.form
-        for e in tab.values():  # Vérifie que tous les champs sont remplis
-            if e == "":
-                flask.flash("Tous les champs ne sont pas remplit !", "error")
-                return flask.render_template('ajouter.html')
-        else:
-            intitule = tab.get("task")
-            liste_date = tab.get("due").split("-")
-            date = datetime(int(liste_date[0]), int(liste_date[1]), int(liste_date[2]))
-            models.create_todo(task=intitule, complete=False, due=date)
-            taches = models.get_todos()
-            return flask.render_template('index.html', tasks=taches)
+    form = FormAjouter()
+    if form.validate_on_submit():
+        intitule = form.task.data
+        date = form.due.data
+        models.create_todo(task=intitule, complete=False, due=date)
+        taches = models.get_todos()
+        return flask.render_template('index.html', tasks=taches)
+    return flask.render_template('ajouter.html')
 
 
 @app.route('/tous_supprimer')
@@ -160,7 +146,8 @@ def import_csv(filename="") -> str:
         try: # En cas d'erreur de format
             tasks = services.import_from_csv(f.filename)
             return flask.render_template('import_csv.html', tasks=tasks, filename=f.filename)
-        except:
+        except Exception as e:
+            print(e)
             flask.flash("Problème de format du fichier csv. \n Pour plus "
                         "d informations, consultez le README", "error")
             return flask.render_template('import_csv.html', tasks=[], filename="")
