@@ -90,6 +90,7 @@ def create_todo(task: str, complete: bool = False, due: Optional[datetime] = Non
     id = get_next_id()
     todo = Todo(id=id, task=task, complete=complete, due=due)
     write_to_bd(todo)
+    return todo
 
 
 def get_todo(par_id: int) -> Todo | bool:
@@ -131,8 +132,7 @@ def update_todo(id: int, task: str, complete: bool, due: Optional[datetime]) -> 
         todo = get_todo(id)
         todo.task = task
         todo.complete = complete
-        due = due.split("-")
-        todo.due = datetime(int(due[0]), int(due[1]), int(due[2])) if due else todo.due  # pourrait être None
+        todo.due = due
         update_bd(todo)
 
 
