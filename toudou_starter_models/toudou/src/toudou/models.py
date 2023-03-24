@@ -43,20 +43,11 @@ def init_db() -> None:
     metadata_obj.create_all(engine)
 
 
-def exist(todo: Todo) -> bool:
-    todos = get_todos()
-    for t in todos:
-        if todo == t:
-            return True
-    return False
-
-
 def write_to_bd(todo: Todo) -> bool:
     """
     Enregistre une tâche [todo] à la base de données si son id n'y est pas.
     """
-    if not exist(todo):
-        #todo.id = get_next_id() if get_todo(todo.id) else todo.id
+    if not get_todo(todo.id):
         requete = db.Insert(todo_table).values(task=todo.task, complete=todo.complete, due=todo.due)
         with engine.connect() as conn:
             conn.execute(requete)
