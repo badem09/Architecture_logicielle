@@ -8,7 +8,7 @@
 {% endwith %}
 
 <div style="display:flex; justify-content: center;" class="divform">
-    <form action="{{ url_for('modifier') }}" method="post">
+    <form action="{{ url_for('old_app.modifier') }}" method="post">
         {{ form.csrf_token }}
         {{ form.id }}
         <div>

@@ -1,31 +1,31 @@
 import flask
-from datetime import datetime
 import os
-
-app = flask.Flask(__name__)
-app.secret_key = os.getenv('TOUDOU_FLASK_SECRET_KEY')
-
 import toudou.models as models
 import toudou.services as services
 from toudou.forms import FormAjouter, FormModifier
-#import models
-#import services
+from flask_httpauth import HTTPBasicAuth
+from werkzeug.security import generate_password_hash, check_password_hash
 
 models.init_db()
 
-categories = flask.Blueprint(
-'categories',
-__name__,
-url_prefix='/categories'
-)
+categories = flask.Blueprint('categories', "__name__", url_prefix='/categories')
+old_app = flask.Blueprint("old_app", "__name__", url_prefix='')
+
+
+def create_app():
+    app = flask.Flask(__name__)
+    app.config.from_prefixed_env(prefix="TOUDOU_FLASK")
+    app.register_blueprint(categories)
+    app.register_blueprint(old_app)
+    return app
+
+
 @categories.route('/')
 def test():
     return "<h1> Le Blueprint catégories marche bien </h1>"
 
-app.register_blueprint(categories)
 
-#app.config.from_prefixed_env()
-@app.route('/')
+@old_app.route('/')
 def redirect_index() -> str:
     """
     Redirection vers la page 'index.html'
@@ -34,7 +34,7 @@ def redirect_index() -> str:
     return flask.render_template('index.html', tasks=taches)
 
 
-@app.route('/completer/<int:id>')
+@old_app.route('/completer/<int:id>')
 def completer(id: int) -> str:
     """
     Modifie le status d'une tâches en "Complétée" (achevée) et redirige vers la page 'index.html'
@@ -44,7 +44,7 @@ def completer(id: int) -> str:
     return flask.render_template('index.html', tasks=models.get_todos())
 
 
-@app.route('/supprimer/<int:id>')
+@old_app.route('/supprimer/<int:id>')
 def supprimer(id: int) -> str:
     """
     Supprime une tâche et redirige vers la page 'index.html'
@@ -55,7 +55,7 @@ def supprimer(id: int) -> str:
     return flask.render_template('index.html', tasks=taches)
 
 
-@app.route('/redirect_modifier/<int:id>')
+@old_app.route('/redirect_modifier/<int:id>')
 def redirect_modifier(id) -> str:
     """
     Redirection vers la page 'modifier.html'
@@ -70,7 +70,7 @@ def redirect_modifier(id) -> str:
     return flask.render_template('modifier.html', task=task, form=form)
 
 
-@app.route('/modifier', methods=['POST'])
+@old_app.route('/modifier', methods=['POST'])
 def modifier() -> str:
     """
     Modifie une tâche à partir des entrées du formulaire de la page 'modifier.html'
@@ -89,16 +89,16 @@ def modifier() -> str:
     return flask.render_template('modifier.html', task=models.get_todo(id))
 
 
-@app.route('/redirect_ajouter')
+@old_app.route('/redirect_ajouter')
 def redirect_ajouter() -> str:
     """
     Redirection vers la page 'ajouter.html'
     """
     form = FormAjouter()
-    return flask.render_template('ajouter.html',form=form)
+    return flask.render_template('ajouter.html', form=form)
 
 
-@app.route('/ajout', methods=['POST'])
+@old_app.route('/ajout', methods=['POST'])
 def ajout() -> str:
     """
     Ajoute une tâche à partir des entrées du formulaire de la page 'ajout.html'
@@ -114,7 +114,7 @@ def ajout() -> str:
     return flask.render_template('ajouter.html')
 
 
-@app.route('/tous_supprimer')
+@old_app.route('/tous_supprimer')
 def tous_supprimer():
     """
     Supprime toutes les tâches enregistrées et redirige vers la page 'index.html'
@@ -123,7 +123,7 @@ def tous_supprimer():
     return flask.render_template('index.html', tasks=[])
 
 
-@app.route('/redirect_import_csv')
+@old_app.route('/redirect_import_csv')
 def redirect_import_csv():
     """
     Redirection vers la page 'import_csv.html'
@@ -131,8 +131,8 @@ def redirect_import_csv():
     return flask.render_template('import_csv.html', tasks=[], filename="")
 
 
-@app.route('/import_csv', methods=['POST'])
-@app.route('/import_csv/<filename>')
+@old_app.route('/import_csv', methods=['POST'])
+@old_app.route('/import_csv/<filename>')
 def import_csv(filename="") -> str:
     """
     Importe les tâches contenue dans le fichier [filename] et selon l'appel de fonction,
@@ -143,7 +143,7 @@ def import_csv(filename="") -> str:
     if flask.request.method == 'POST':  # Affiche les tâches dans le scrollBox
         tab = flask.request.files
         f = tab["file"]
-        try: # En cas d'erreur de format
+        try:  # En cas d'erreur de format
             tasks = services.import_from_csv(f.filename)
             return flask.render_template('import_csv.html', tasks=tasks, filename=f.filename)
         except Exception as e:
@@ -160,7 +160,7 @@ def import_csv(filename="") -> str:
         return flask.render_template('index.html', tasks=models.get_todos())
 
 
-@app.route('/redirect_export_csv')
+@old_app.route('/redirect_export_csv')
 def redirect_export_csv() -> str:
     """
     Redirige vers la page 'export_csv'.
@@ -168,7 +168,7 @@ def redirect_export_csv() -> str:
     return flask.render_template('export_csv.html', tasks=models.get_todos())
 
 
-@app.route('/export_csv', methods=['POST'])
+@old_app.route('/export_csv', methods=['POST'])
 def export_csv():
     """
     Récupere les tâches à exporter et les exportes via 'services".
