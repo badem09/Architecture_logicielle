@@ -1,12 +1,12 @@
+from dataclasses import dataclass
+
 import flask
-import os
+import logging
 import toudou.models as models
 import toudou.services as services
 from toudou.forms import FormAjouter, FormModifier
 from flask_httpauth import HTTPBasicAuth
 from werkzeug.security import generate_password_hash, check_password_hash
-
-models.init_db()
 
 categories = flask.Blueprint('categories', "__name__", url_prefix='/categories')
 old_app = flask.Blueprint("old_app", "__name__", url_prefix='')
@@ -20,9 +20,44 @@ def create_app():
     return app
 
 
+auth = HTTPBasicAuth()
+users = {
+    'utilisateur': ['user', generate_password_hash('utilisateur')],
+    'administrateur': ['admin', generate_password_hash('administrateur')]
+}
+
+@auth.get_user_roles
+def get_user_roles(username):
+    return users.get(username)[0]
+
+@auth.get_password
+def get_password(username):
+    return users.get(username)[1]
+
+
+@auth.verify_password
+def verify_password(username, password):
+    if username in users and \
+            check_password_hash(users.get(username)[1], password):
+        return username
+
+
+
 @categories.route('/')
 def test():
     return "<h1> Le Blueprint catégories marche bien </h1>"
+
+
+
+logging.basicConfig(level=logging.INFO, format='%(asctime)s [%(levelname)s] %(message)s',
+                    handlers=[logging.FileHandler('debug.log'), logging.StreamHandler()])
+
+
+@old_app.errorhandler(500)
+def handle_internal_error(error):
+    flask.flash('Erreur interne du serveur', 'error')
+    logging.exception(error)
+    return flask.redirect(flask.url_for('.index'))
 
 
 @old_app.route('/')
@@ -33,6 +68,8 @@ def redirect_index() -> str:
     taches = models.get_todos()
     return flask.render_template('index.html', tasks=taches)
 
+
+@auth.login_required(role='admin')
 
 @old_app.route('/completer/<int:id>')
 def completer(id: int) -> str:
@@ -45,6 +82,7 @@ def completer(id: int) -> str:
 
 
 @old_app.route('/supprimer/<int:id>')
+@auth.login_required(role='admin')
 def supprimer(id: int) -> str:
     """
     Supprime une tâche et redirige vers la page 'index.html'
@@ -56,6 +94,7 @@ def supprimer(id: int) -> str:
 
 
 @old_app.route('/redirect_modifier/<int:id>')
+@auth.login_required(role='admin')
 def redirect_modifier(id) -> str:
     """
     Redirection vers la page 'modifier.html'
@@ -64,13 +103,13 @@ def redirect_modifier(id) -> str:
     form = FormModifier()
     form.task.data = task.task
     form.status.data = "Complétée" if task.complete else "Incomplète"
-    print(form.status.data)
     form.due.data = task.due
     form.id.data = task.id
     return flask.render_template('modifier.html', task=task, form=form)
 
 
 @old_app.route('/modifier', methods=['POST'])
+@auth.login_required(role='admin')
 def modifier() -> str:
     """
     Modifie une tâche à partir des entrées du formulaire de la page 'modifier.html'
@@ -90,6 +129,7 @@ def modifier() -> str:
 
 
 @old_app.route('/redirect_ajouter')
+@auth.login_required(role='admin')
 def redirect_ajouter() -> str:
     """
     Redirection vers la page 'ajouter.html'
@@ -99,6 +139,7 @@ def redirect_ajouter() -> str:
 
 
 @old_app.route('/ajout', methods=['POST'])
+@auth.login_required(role='admin')
 def ajout() -> str:
     """
     Ajoute une tâche à partir des entrées du formulaire de la page 'ajout.html'
@@ -115,6 +156,7 @@ def ajout() -> str:
 
 
 @old_app.route('/tous_supprimer')
+@auth.login_required(role='admin')
 def tous_supprimer():
     """
     Supprime toutes les tâches enregistrées et redirige vers la page 'index.html'
@@ -124,6 +166,7 @@ def tous_supprimer():
 
 
 @old_app.route('/redirect_import_csv')
+@auth.login_required(role='admin')
 def redirect_import_csv():
     """
     Redirection vers la page 'import_csv.html'
@@ -185,7 +228,3 @@ def export_csv():
             flask.flash("Les tàches séléctionnées ont bien été exportées ici : \n" + path)
 
     return flask.render_template('export_csv.html', tasks=models.get_todos())
-
-
-if __name__ == '__main__':
-    app.run(debug=True)
