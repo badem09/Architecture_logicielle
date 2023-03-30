@@ -1,7 +1,8 @@
 import click
 from datetime import datetime
-import models
-import services
+import toudou.services as services
+import toudou.models as models
+
 
 
 @click.group()
