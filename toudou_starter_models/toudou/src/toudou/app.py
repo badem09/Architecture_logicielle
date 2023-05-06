@@ -41,12 +41,6 @@ def verify_password(username, password):
         return username
 
 
-@todos.route('/test')
-def test():
-    return "<h1> Le Blueprint catégories marche bien </h1>"
-
-
-
 logging.basicConfig(level=logging.INFO, format='%(asctime)s [%(levelname)s] %(message)s',
                     handlers=[logging.FileHandler('debug.log'), logging.StreamHandler()])
 
