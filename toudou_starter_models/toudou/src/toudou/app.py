@@ -1,5 +1,3 @@
-from dataclasses import dataclass
-
 import flask
 import logging
 import toudou.models as models
@@ -22,28 +20,28 @@ def create_app():
 
 auth = HTTPBasicAuth()
 users = {
-    'utilisateur': ['user', generate_password_hash('utilisateur')],
-    'administrateur': ['admin', generate_password_hash('administrateur')]
+    'utilisateur': generate_password_hash('utilisateur'),
+    'administrateur': generate_password_hash('administrateur')
 }
+
+role_user = {
+    "utilisateur": "user",
+    "administrateur": "admin"
+}
+
 
 @auth.get_user_roles
 def get_user_roles(username):
-    return users.get(username)[0]
-
-@auth.get_password
-def get_password(username):
-    return users.get(username)[1]
+    return role_user.get(username)
 
 
 @auth.verify_password
 def verify_password(username, password):
-    if username in users and \
-            check_password_hash(users.get(username)[1], password):
+    if username in users and check_password_hash(users.get(username), password):
         return username
 
 
-
-@categories.route('/')
+@categories.route('/test')
 def test():
     return "<h1> Le Blueprint catégories marche bien </h1>"
 
@@ -53,14 +51,20 @@ logging.basicConfig(level=logging.INFO, format='%(asctime)s [%(levelname)s] %(me
                     handlers=[logging.FileHandler('debug.log'), logging.StreamHandler()])
 
 
-@old_app.errorhandler(500)
+@categories.errorhandler(500)
 def handle_internal_error(error):
     flask.flash('Erreur interne du serveur', 'error')
     logging.exception(error)
     return flask.redirect(flask.url_for('.index'))
 
+@categories.errorhandler(501)
+def handle_ajout_error(error):
+    flask.flash("Un des champs n'a pas été remplit !", 'error')
+    logging.exception(error)
+    return flask.redirect(flask.url_for('.index'))
 
-@old_app.route('/')
+
+@categories.route('/')
 def redirect_index() -> str:
     """
     Redirection vers la page 'index.html'
@@ -70,8 +74,7 @@ def redirect_index() -> str:
 
 
 @auth.login_required(role='admin')
-
-@old_app.route('/completer/<int:id>')
+@categories.route('/completer/<int:id>')
 def completer(id: int) -> str:
     """
     Modifie le status d'une tâches en "Complétée" (achevée) et redirige vers la page 'index.html'
@@ -81,7 +84,7 @@ def completer(id: int) -> str:
     return flask.render_template('index.html', tasks=models.get_todos())
 
 
-@old_app.route('/supprimer/<int:id>')
+@categories.route('/supprimer/<int:id>')
 @auth.login_required(role='admin')
 def supprimer(id: int) -> str:
     """
@@ -93,7 +96,7 @@ def supprimer(id: int) -> str:
     return flask.render_template('index.html', tasks=taches)
 
 
-@old_app.route('/redirect_modifier/<int:id>')
+@categories.route('/redirect_modifier/<int:id>')
 @auth.login_required(role='admin')
 def redirect_modifier(id) -> str:
     """
@@ -108,7 +111,7 @@ def redirect_modifier(id) -> str:
     return flask.render_template('modifier.html', task=task, form=form)
 
 
-@old_app.route('/modifier', methods=['POST'])
+@categories.route('/modifier', methods=['POST'])
 @auth.login_required(role='admin')
 def modifier() -> str:
     """
@@ -128,7 +131,7 @@ def modifier() -> str:
     return flask.render_template('modifier.html', task=models.get_todo(id))
 
 
-@old_app.route('/redirect_ajouter')
+@categories.route('/redirect_ajouter')
 @auth.login_required(role='admin')
 def redirect_ajouter() -> str:
     """
@@ -138,7 +141,7 @@ def redirect_ajouter() -> str:
     return flask.render_template('ajouter.html', form=form)
 
 
-@old_app.route('/ajout', methods=['POST'])
+@categories.route('/ajout', methods=['POST'])
 @auth.login_required(role='admin')
 def ajout() -> str:
     """
@@ -155,7 +158,7 @@ def ajout() -> str:
     return flask.render_template('ajouter.html')
 
 
-@old_app.route('/tous_supprimer')
+@categories.route('/tous_supprimer')
 @auth.login_required(role='admin')
 def tous_supprimer():
     """
@@ -165,7 +168,7 @@ def tous_supprimer():
     return flask.render_template('index.html', tasks=[])
 
 
-@old_app.route('/redirect_import_csv')
+@categories.route('/redirect_import_csv')
 @auth.login_required(role='admin')
 def redirect_import_csv():
     """
@@ -174,8 +177,8 @@ def redirect_import_csv():
     return flask.render_template('import_csv.html', tasks=[], filename="")
 
 
-@old_app.route('/import_csv', methods=['POST'])
-@old_app.route('/import_csv/<filename>')
+@categories.route('/import_csv', methods=['POST'])
+@categories.route('/import_csv/<filename>')
 def import_csv(filename="") -> str:
     """
     Importe les tâches contenue dans le fichier [filename] et selon l'appel de fonction,
@@ -203,7 +206,7 @@ def import_csv(filename="") -> str:
         return flask.render_template('index.html', tasks=models.get_todos())
 
 
-@old_app.route('/redirect_export_csv')
+@categories.route('/redirect_export_csv')
 def redirect_export_csv() -> str:
     """
     Redirige vers la page 'export_csv'.
@@ -211,7 +214,7 @@ def redirect_export_csv() -> str:
     return flask.render_template('export_csv.html', tasks=models.get_todos())
 
 
-@old_app.route('/export_csv', methods=['POST'])
+@categories.route('/export_csv', methods=['POST'])
 def export_csv():
     """
     Récupere les tâches à exporter et les exportes via 'services".
