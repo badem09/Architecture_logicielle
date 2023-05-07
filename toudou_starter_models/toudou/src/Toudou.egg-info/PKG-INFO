@@ -14,17 +14,17 @@ BA Demba INFI2B
 ## Installation
 
 
-Dans le dossier du projet, rendez vous à toudou/src et executez la commande suivante:
+Dans le dossier du projet, rendez-vous dans le dossier toudou et executez la commande suivante:
 ```bash
 $ pdm install 
 ```
 
 ## Lancement
 
-Pour lancer le projet, vous pouvez exécuter le fichier toudou/src/toudou/views.py
+Pour lancer le projet, executez la commande suivante (toujours dans le dossier toudou)
 
 ```bash
-$ python src/toudou/views.py
+$ pdm run start
 ```
 Vous devrez ensuite vous rendre dans un navigateur et taper l'adresse suivante : http://127.0.0.1:5000 
 
