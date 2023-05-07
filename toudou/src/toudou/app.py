@@ -254,9 +254,11 @@ def export_csv():
     Exporte les tâches sélectionnées dans un fichier .csv téléchargeable.
     """
     liste_id = flask.request.form.getlist("task")
+    print(liste_id)
 
     if len(liste_id) < 1:
         flask.flash("Aucune tâche n'a été séléctionnée", "error")
+        return flask.render_template('export_csv.html', tasks=models.get_todos())
     else:
         tasks = [models.get_todo(int(id)) for id in liste_id]
         output = services.export_to_csv(tasks)
