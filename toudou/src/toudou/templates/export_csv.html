@@ -32,7 +32,7 @@
     }
 </script>
 <br><br>
-<form action="{{ url_for('export_csv') }}" method="post">
+<form action="{{ url_for('todos.export_csv') }}" method="post">
     <div class="scrollBox">
         <fieldset>
             {% for task in tasks %}
@@ -58,7 +58,7 @@
         </fieldset>
     </div>
     <br>
-    <input type="submit" value="Submit">
+    <input type="submit" value="Telecharger">
 </form>
 
 

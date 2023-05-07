@@ -1,23 +1,30 @@
-# Module Architecture logicielle 
+Metadata-Version: 2.1
+Name: Toudou
+Version: 0.1
+Summary: A simple task manager.
+License: MIT
+Requires-Python: >=3.7
+Description-Content-Type: text/markdown
+
+# Module Architechture logicielle 
 # Projet Toudou
 
 BA Demba INFI2B
 
 ## Installation
 
-Rendez-vous dans le dossier toudou (assurez vous d'être au même niveau que le fichier *pyproject.toml*) 
-et executez la commande suivante:
 
+Dans le dossier du projet, rendez-vous dans le dossier toudou et executez la commande suivante:
 ```bash
 $ pdm install 
 ```
 
 ## Lancement
 
-Pour lancer le projet, vous pouvez exécuter le fichier toudou/src/toudou/views.py
+Pour lancer le projet, executez la commande suivante (toujours dans le dossier toudou)
 
 ```bash
-$ python src/toudou/views.py
+$ pdm run start
 ```
 Vous devrez ensuite vous rendre dans un navigateur et taper l'adresse suivante : http://127.0.0.1:5000 
 
@@ -39,8 +46,6 @@ Les fonctionnalités présentes sont :
 - la suppression de tâches
 - l'importation de tâches d'un fichier csv (voir format ci-dessous)
 - l'exportation des tâches dans un fichier csv (1 exportation = 1 nouveau fichier)
-
-Le dossier /templates contient les fichiers .html, /csv les exportations et /static les feuilles de styles
 
 
 ### Importation csv
@@ -81,5 +86,3 @@ tâches.
 les modifier est très similaire ce qui entraine de la répétition. Cependant,
 Celles-ci étant 2 fonctionnalités bien différentes et pour respecter le SOC
 je n'ai pas fusionné ces 2 templates (ajouter.html et modifier.html).
-- Lors de l'ajout de tâches ou de leurs importation, les tâches déja présentes 
-(même intitulé et même date) ne sont pas enregistrées.

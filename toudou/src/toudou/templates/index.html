@@ -2,8 +2,8 @@
 
 {% block content %}
     <h2 style="text-align: center;">Liste des tâches ({{tasks|length}} tâches)</h2>
-    <a href="/redirect_ajouter"><button>Nouvelle tache</button></a>
-    <a href="/tous_supprimer" onclick="return confirm('Are you sure you to delete all the tasks?');"><button style="float: right;">Tous supprimer</button></a>
+    <a href="/todos/ajouter"><button>Nouvelle tache</button></a>
+    <a href="/todos/tous_supprimer" onclick="return confirm('Are you sure you to delete all the tasks?');"><button style="float: right;">Tous supprimer</button></a>
     <br><br>
     <div class="scrollBox2">
         {% for task in tasks %}
@@ -22,9 +22,9 @@
                 element.appendChild(para);
             </script>
             <p>Due le : {{task.due.strftime("%d-%m-%Y")}}</p>
-            <a href="/completer/{{task.id}}" onclick="return confirm('Are you sure you complete this task');"><input type="submit" name="completer" value="Completer la tâche"></a>
-            <a href="/redirect_modifier/{{task.id}}"><input type="submit" name="modifier" value="Modifier"></a>
-            <a href="/supprimer/{{task.id}}" onclick="return confirm('Are you sure you wish to delete?');"><input type="submit" name="supprimer" value="Supprimer"></a>
+            <a href="/todos/{{task.id}}/completer" onclick="return confirm('Are you sure you complete this task');"><input type="submit" name="completer" value="Completer la tâche"></a>
+            <a href="/todos/{{task.id}}/modifier"><input type="submit" name="modifier" value="Modifier"></a>
+            <a href="/todos/{{task.id}}/supprimer" onclick="return confirm('Are you sure you wish to delete?');"><input type="submit" name="supprimer" value="Supprimer"></a>
         </div>
          <hr>
     {% endfor %}

@@ -8,20 +8,23 @@
 {% endwith %}
 
 <div style="display:flex; justify-content: center;" class="divform">
-    <form action="{{ url_for('ajout') }}" method="post">
+    <form action="{{ url_for('todos.action_ajouter') }}" method="post">
+        {{ form.csrf_token }}
         <div>
-            <label for="intitule">Intutulé : </label>
-            <input type="text" id="intitule" name="intitule" required="required"><!--Vérification des champs coté client-->
+            {{ form.task.label }}
+            {{ form.task }}
         </div>
         <div>
-            <label for="date"> Date </label>
-            <input type="date" placeholder="dd-mm-yyyy" id="date" name="date"/>
-            <script>
-                document.getElementById('date').valueAsDate = new Date(); //Mettre la date d'aujourd'hui
-            </script>
+            {{ form.status.label }}
+            {{ form.status }}
+        </div>
+        <div>
+            {{ form.due.label }}
+            {{ form.due }}
         </div>
         <input type="submit" id="ok" value="Envoyer">
     </form>
 </div>
+
 
 {% endblock %}

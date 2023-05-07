@@ -4,9 +4,11 @@ from typing import Optional
 import sqlalchemy as db
 from sqlalchemy import create_engine, MetaData, Table, Column, Integer, String, Boolean, Date
 
+from toudou import config
+
 TODO_FOLDER = "db"
 metadata_obj = MetaData()
-engine = create_engine("sqlite:///todos.db", echo=True)
+engine = create_engine(config['DATABASE_URL'], echo=config['DEBUG'])
 todo_table = Table(
     "todos",
     metadata_obj,
@@ -25,22 +27,21 @@ class Todo:
     due: Optional[datetime]
 
     def __eq__(self, other):
-        """
-        Assigne la manière de comparer deux objets Todo.
-        Ici compare la date et l'intitulé.
-        """
         return self.due.strftime("%d-%m-%Y") == other.due.strftime("%d-%m-%Y") and self.task == other.task
 
+    def to_dict(self):
+        return {
+            'id': self.id,
+            'task': self.task,
+            'complete': self.complete,
+            'due': self.due.strftime('%Y-%m-%d %H:%M:%S') if self.due else None
+        }
 
 def init_db() -> None:
     metadata_obj.create_all(engine)
 
 
 def exist(todo: Todo) -> bool:
-    """
-    Vérfie si un objet Todo similaire est déja enregistré dans la bd.
-    Retourne True si oui, False sinon.
-    """
     todos = get_todos()
     for t in todos:
         if todo == t:
@@ -60,6 +61,17 @@ def write_to_bd(todo: Todo) -> bool:
             conn.commit()
         return True
     return False
+
+
+def update_bd(todo: Todo) -> None:
+    """
+    Modifie une tâche dans la base de données avec son id
+    """
+    requete = db.Update(todo_table).values(id=todo.id, task=todo.task, complete=todo.complete, due=todo.due)
+    requete = requete.where(db.sql.column('id') == todo.id)
+    with engine.connect() as conn:
+        conn.execute(requete)
+        conn.commit()
 
 
 def get_next_id() -> int:
@@ -82,6 +94,7 @@ def create_todo(task: str, complete: bool = False, due: Optional[datetime] = Non
     id = get_next_id()
     todo = Todo(id=id, task=task, complete=complete, due=due)
     write_to_bd(todo)
+    return todo
 
 
 def get_todo(par_id: int) -> Todo | bool:
@@ -105,24 +118,14 @@ def get_todos() -> list:
     Retourne une liste de tâches triées par date sous forme de tuple.
     Ex : [(id,task,complete,due),...]
     """
-    requete = todo_table.select()
+    requete = todo_table.select().order_by(db.sql.column("due"))
     with engine.connect() as conn:
         result = conn.execute(requete).fetchall()
         conn.commit()
-    if result:
-        return sorted(result, key=lambda x: x[3])
-    return []
-
-
-def update_bd(todo: Todo) -> None:
-    """
-    Modifie une tâche dans la base de données avec son id
-    """
-    requete = db.Update(todo_table).values(id=todo.id, task=todo.task, complete=todo.complete, due=todo.due)
-    requete = requete.where(db.sql.column('id') == todo.id)
-    with engine.connect() as conn:
-        conn.execute(requete)
-        conn.commit()
+    return result if result else []
+    # Autre methode :
+    # requete = select(todo_table)
+    # result = engine.connect().execute(requete).fetchall()
 
 
 def update_todo(id: int, task: str, complete: bool, due: Optional[datetime]) -> None:
@@ -133,18 +136,8 @@ def update_todo(id: int, task: str, complete: bool, due: Optional[datetime]) -> 
         todo = get_todo(id)
         todo.task = task
         todo.complete = complete
-        due = due.split("-")
-        todo.due = datetime(int(due[0]), int(due[1]), int(due[2])) if due else todo.due  # pourrait être None
+        todo.due = due
         update_bd(todo)
-
-
-def complete_todo(par_id: int) -> None:
-    """
-    Change le champs 'complete' d'un objet Todo en True.
-    """
-    tache = get_todo(par_id)
-    tache.complete = True
-    update_bd(tache)
 
 
 def delete_todo(id: int) -> bool:
@@ -161,6 +154,15 @@ def delete_todo(id: int) -> bool:
             conn.commit()
         return True
     return False
+
+
+def complete_todo(par_id: int) -> None:
+    """
+    Change le champs 'complete' d'un objet Todo en True.
+    """
+    tache = get_todo(par_id)
+    tache.complete = True
+    update_bd(tache)
 
 
 def delete_all() -> None:

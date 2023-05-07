@@ -1,41 +1,32 @@
 import csv
-import os
+import io
 from datetime import datetime
-import models
+import toudou.models as models
 
 
-def export_to_csv(todos=[]) -> str:
+def export_to_csv(todos) -> str:
     """
-    Exporte les tâches dans un nouveau fichier csv 'todo[int].csv'.
-    [int] dépend du nombre de fichiers csv déja générés
     """
-    n = len(os.listdir("csv")) + 1
-    if not todos:
-        todos = models.get_todos()
-    with open("csv/todo"+str(n)+".csv", "w", encoding='UTF8', newline='') as f:
-        writer = csv.writer(f)
-        writer.writerow(["id", "task", "complete", "due"])
-        for t in todos:
-            writer.writerow([t.id, t.task, t.complete, t.due])
-    return os.path.abspath(f.name)
+    output = io.StringIO()
+    writer = csv.writer(output)
+    writer.writerow(["id", "task", "complete", "due"])
+    for todo in todos:
+        writer.writerow([todo.id, todo.task, todo.complete, todo.due])
+    return output.getvalue()
 
 
-def import_from_csv(file: str, tasks=None) -> list[models.Todo]:
+def import_from_csv(file, tasks=None) -> list[models.Todo]:
     """
     Importe les tâches contenue dans le fichier [file].
-    Retourne une liste d'objets Todo.
-    Voir README pour le format du contenu du fichier csv
+    Retourne une liste d'objets Todo
     """
     if not tasks:
         tasks = []
-    with open("csv/"+file, 'r') as file:
-        i = 0
-        csvreader = csv.reader(file, delimiter=',')
-        for ligne in csvreader:
-            if i > 0:  # to avoid header
-                date = [int(e) for e in ligne[3].split('-')]
-                tasks.append(models.Todo(id=int(ligne[0]), task=ligne[1],
-                                         complete=True if ligne[2] == 'True' else False,
-                                         due=datetime(date[0], date[1], date[2])))
-            i += 1
+    csv_reader = csv.reader(file.stream.read().decode("utf-8").splitlines())
+    next(csv_reader)
+    for ligne in csv_reader:
+        date = [int(e) for e in ligne[3].split('-')]
+        tasks.append(models.create_todo(task=ligne[1],
+                                        complete=True if ligne[2] == 'True' else False,
+                                        due=datetime(date[0], date[1], date[2])))
     return tasks
