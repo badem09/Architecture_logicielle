@@ -1,11 +1,10 @@
 import csv
 import io
-import os
 from datetime import datetime
 import toudou.models as models
-#import models
 
-def export_to_csv(todos=[]) -> str:
+
+def export_to_csv(todos) -> str:
     """
     """
     output = io.StringIO()
