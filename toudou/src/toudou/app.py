@@ -224,7 +224,7 @@ def action_import_taches_csv() -> str:
 @auth.login_required(role='admin')
 def action_save_taches_csv() -> str:
     """
-    Enregistre les tâches dans la bd et redirige vers 'index.html'
+    Enregistre les tâches importées dans la bd et redirige vers 'index.html'
     """
     tasks_dict = json.loads(flask.request.form['tasks_json'])
     tasks = [models.Todo(
