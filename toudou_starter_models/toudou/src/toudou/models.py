@@ -32,6 +32,13 @@ class Todo:
     def __eq__(self, other):
         return self.due.strftime("%d-%m-%Y") == other.due.strftime("%d-%m-%Y") and self.task == other.task
 
+    def to_dict(self):
+        return {
+            'id': self.id,
+            'task': self.task,
+            'complete': self.complete,
+            'due': self.due.strftime('%Y-%m-%d %H:%M:%S') if self.due else None
+        }
 
 def init_db() -> None:
     metadata_obj.create_all(engine)
