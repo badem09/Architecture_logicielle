@@ -8,7 +8,7 @@
     {% endif %}
 {% endwith %}
 
-<form action="{{ url_for('todos.import_csv') }}" method="post" enctype="multipart/form-data">
+<form action="{{ url_for('todos.action_import_csv') }}" method="post" enctype="multipart/form-data">
     <br>
     <div>
         <label for="file">Sélectionner le fichier à envoyer</label>
@@ -47,7 +47,7 @@
     </div>
     <br>
     {% if filename %} <!-- Si l'user à déja chargé les tâches d'un fichier csv -->
-        <a href="import_csv/{{filename}}"><button> Enregistrer </button></a>
+        <a href="/todos"><button> Enregistrer </button></a>
     {% endif %}
 
 {% endblock %}
