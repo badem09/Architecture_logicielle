@@ -6,30 +6,39 @@ import flask
 import logging
 import toudou.models as models
 import toudou.services as services
+from flask import jsonify
 from flask_pydantic_spec import FlaskPydanticSpec
 from toudou.forms import FormAjouter, FormModifier
-from flask_httpauth import HTTPBasicAuth
+from flask_httpauth import HTTPBasicAuth, HTTPTokenAuth
 from werkzeug.security import generate_password_hash, check_password_hash
 
 todos = flask.Blueprint('todos', "__name__", url_prefix='/todos')
 api = flask.Blueprint('api', __name__, url_prefix='/')
 
-spec = FlaskPydanticSpec('flask', title='Todo API', version='1.0.0', openapi_version='3.0.2')
-spec.register(api)
 
 def create_app():
     app = flask.Flask(__name__)
     app.config.from_prefixed_env(prefix="TOUDOU_FLASK")
     app.register_blueprint(todos)
-    app.register_blueprint(api)
+
+    spec = FlaskPydanticSpec('flask', title='Todo API', version='1.0.0', openapi_version='3.0.2')
+    spec.register(todos)
     return app
 
 
 auth = HTTPBasicAuth()
+token_auth = HTTPTokenAuth()
+
 users = {
     'utilisateur': generate_password_hash('utilisateur'),
     'administrateur': generate_password_hash('administrateur')
 }
+
+tokens = {
+    'token1': 'utilisateur',
+    'token2': 'administrateur'
+}
+
 
 role_user = {
     "utilisateur": "user",
@@ -47,6 +56,16 @@ def verify_password(username, password):
     if username in users and check_password_hash(users.get(username), password):
         return username
 
+@token_auth.verify_token
+def verify_token(token):
+    if token in tokens:
+        return tokens[token]
+
+@todos.route('/protected', methods=['GET'])
+@token_auth.login_required
+def protected():
+    return jsonify({'message': 'This is a protected endpoint!'})
+
 
 logging.basicConfig(level=logging.INFO, format='%(asctime)s [%(levelname)s] %(message)s',
                     handlers=[logging.FileHandler('debug.log'), logging.StreamHandler()])
@@ -58,9 +77,10 @@ def handle_internal_error(error):
     logging.exception(error)
     return flask.redirect(flask.url_for('.index'))
 
-@todos.errorhandler(501)
-def handle_ajout_error(error):
-    flask.flash("Un des champs n'a pas été remplit !", 'error')
+
+@todos.errorhandler(404)
+def handle_champs_error(error):
+    flask.flash("Ressource indisponible", 'error')
     logging.exception(error)
     return flask.redirect(flask.url_for('.index'))
 
@@ -74,8 +94,8 @@ def index() -> str:
     return flask.render_template('index.html', tasks=taches)
 
 
-@auth.login_required(role='admin')
 @todos.route('/<int:id>/completer')
+@auth.login_required(role='admin')
 def completer(id: int) -> str:
     """
     Modifie le status d'une tâches en "Complétée" (achevée) et redirige vers la page 'index.html'
@@ -111,7 +131,7 @@ def redirect_modifier(id) -> str:
     return flask.render_template('modifier.html', task=task, form=form)
 
 
-@todos.route('/action_modifier', methods=['POST','GET'])
+@todos.route('/action_modifier', methods=['POST'])
 @auth.login_required(role='admin')
 def action_modifier() -> str:
     """
@@ -188,6 +208,7 @@ def action_import_taches_csv() -> str:
         return flask.render_template('import_csv.html', tasks=tasks, filename='"' + file.filename + '"', tasks_json=tasks_json)
     except Exception as e:
         traceback.print_exc()
+        handle_import_error()
         flask.flash("Problème de format du fichier csv. \n Pour plus "
                     "d informations, consultez le README", "error")
         return flask.render_template('import_csv.html', tasks=[], filename="")
@@ -225,19 +246,16 @@ def redirect_export_csv() -> str:
 
 def export_csv():
     """
-
+    Exporte les tâches sélectionnées dans un fichier .csv téléchargeable.
     """
-    if flask.request.method == 'POST':
-        liste_id = flask.request.form.getlist("task")
+    liste_id = flask.request.form.getlist("task")
 
-        if len(liste_id) < 1:
-            flask.flash("Aucune tâche n'a été séléctionnée", "error")
-        else:
-            tasks = [models.get_todo(int(id)) for id in liste_id]
-            output = services.export_to_csv(tasks)
-            response = flask.make_response(output)
-            response.headers['Content-Disposition'] = 'attachment; filename=myfile.csv'
-            response.headers['Content-Type'] = 'text/csv'
-            return response
-
-    return flask.render_template('export_csv.html', tasks=models.get_todos())
+    if len(liste_id) < 1:
+        flask.flash("Aucune tâche n'a été séléctionnée", "error")
+    else:
+        tasks = [models.get_todo(int(id)) for id in liste_id]
+        output = services.export_to_csv(tasks)
+        response = flask.make_response(output)
+        response.headers['Content-Disposition'] = 'attachment; filename=myfile.csv'
+        response.headers['Content-Type'] = 'text/csv'
+        return response
