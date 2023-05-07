@@ -98,7 +98,6 @@ def supprimer(id: int) -> str:
 
 
 @todos.route('/<int:id>/modifier')
-@auth.login_required(role='admin')
 def redirect_modifier(id) -> str:
     """
     Redirection vers la page 'modifier.html'
@@ -133,7 +132,6 @@ def action_modifier() -> str:
 
 
 @todos.route('/ajouter')
-@auth.login_required(role='admin')
 def ajouter() -> str:
     """
     Redirection vers la page 'ajouter.html'
@@ -170,7 +168,6 @@ def tous_supprimer():
 
 
 @todos.route('/import')
-@auth.login_required(role='admin')
 def redirect_import_csv():
     """
     Redirection vers la page 'import_csv.html'
@@ -179,6 +176,7 @@ def redirect_import_csv():
 
 
 @todos.route('/action_import_csv', methods=['POST'])
+@auth.login_required(role='admin')
 def action_import_taches_csv() -> str:
     """
     Importe les tâches contenue dans le fichier [filename] et renvoie les tâches
@@ -195,8 +193,8 @@ def action_import_taches_csv() -> str:
         return flask.render_template('import_csv.html', tasks=[], filename="")
 
 
-
 @todos.route('/action_save_import_csv', methods=['POST'])
+@auth.login_required(role='admin')
 def action_save_taches_csv() -> str:
     """
     Enregistre les tâches dans la bd et redirige vers 'index.html'
@@ -223,6 +221,8 @@ def redirect_export_csv() -> str:
 
 
 @todos.route('/action_export_csv', methods=['POST'])
+@auth.login_required(role='admin')
+
 def export_csv():
     """
 
@@ -238,7 +238,6 @@ def export_csv():
             response = flask.make_response(output)
             response.headers['Content-Disposition'] = 'attachment; filename=myfile.csv'
             response.headers['Content-Type'] = 'text/csv'
-
             return response
 
     return flask.render_template('export_csv.html', tasks=models.get_todos())
