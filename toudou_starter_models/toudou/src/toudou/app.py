@@ -1,4 +1,6 @@
+import json
 import traceback
+from datetime import datetime
 
 import flask
 import logging
@@ -177,30 +179,39 @@ def redirect_import_csv():
 
 
 @todos.route('/action_import_csv', methods=['POST'])
-@todos.route('/action_import_csv/<filename>')
-def action_import_csv(filename="") -> str:
+def action_import_taches_csv() -> str:
     """
-    Importe les tâches contenue dans le fichier [filename] et selon l'appel de fonction,
-    affiche les tâches (appel avec le Formulaire) ou
-    enregistre les tâches et redirige vers 'index.html'(appel avec le boutton "Enregistrer'
-    de la page 'import_csv.html')
+    Importe les tâches contenue dans le fichier [filename] et renvoie les tâches
     """
-    if flask.request.method == 'POST':  # Affiche les tâches dans le scrollBox
-        file = flask.request.files["file"]
-        try:
-            tasks = services.import_from_csv(file)
-            return flask.render_template('import_csv.html', tasks=tasks, filename='"' + file.filename + '"')
-        except Exception as e:
-            flask.flash("Problème de format du fichier csv. \n Pour plus "
-                        "d informations, consultez le README", "error")
-            return flask.render_template('import_csv.html', tasks=[], filename="")
+    file = flask.request.files["file"]
+    try:
+        tasks = services.import_from_csv(file)
+        tasks_json = json.dumps([t.to_dict() for t in tasks])
+        return flask.render_template('import_csv.html', tasks=tasks, filename='"' + file.filename + '"', tasks_json=tasks_json)
+    except Exception as e:
+        traceback.print_exc()
+        flask.flash("Problème de format du fichier csv. \n Pour plus "
+                    "d informations, consultez le README", "error")
+        return flask.render_template('import_csv.html', tasks=[], filename="")
 
 
-    else:  # Enregistre les tâches et redirige vers 'index.html'
-        tasks = services.import_from_csv(filename)
-        for t in tasks:
-            models.write_to_bd(t)
-        return flask.render_template('index.html', tasks=models.get_todos())
+
+@todos.route('/action_save_import_csv', methods=['POST'])
+def action_save_taches_csv() -> str:
+    """
+    Enregistre les tâches dans la bd et redirige vers 'index.html'
+    """
+    tasks_dict = json.loads(flask.request.form['tasks_json'])
+    tasks = [models.Todo(
+        id=d['id'],
+        task=d['task'],
+        complete=d['complete'],
+        due=datetime.strptime(d['due'], '%Y-%m-%d %H:%M:%S')
+    ) for d in tasks_dict]
+
+    for t in tasks:
+        models.write_to_bd(t)
+    return flask.render_template('index.html', tasks=models.get_todos())
 
 
 @todos.route('/export')
