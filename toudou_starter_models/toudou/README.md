@@ -6,29 +6,31 @@ BA Demba INFI2B
 ## Installation
 
 
-Dans le dossier du projet, rendez vous à toudou/src et executez la commande suivante:
+Dans le dossier du projet, rendez-vous dans le dossier toudou et executez la commande suivante:
+
 ```bash
 $ pdm install 
 ```
 
 ## Lancement
 
-Pour lancer le projet, vous pouvez exécuter le fichier toudou/src/toudou/views.py
+Pour lancer le projet, executez la commande suivante (toujours dans le dossier toudou)
 
 ```bash
-$ python src/toudou/views.py
+$ pdm run start
 ```
-Vous devrez ensuite vous rendre dans un navigateur et taper l'adresse suivante : http://127.0.0.1:5000 
+Vous devrez ensuite vous rendre dans un navigateur et taper l'adresse suivante : http://127.0.0.1:5000/todos/
 
 
 ## Structure du code
 
-L'application web est structurée en 3 parties : views.py (la vue / le controlleur), 
+L'application web est structurée en 3 parties : app.py (la vue / le controlleur), 
 models.py (le modèle) et services.py (les services).
 
-views.py possède des fonctions de redirections (commençant pas 'redirect') et des fonctions de traitements.
+app.py gère les redirections entre les pages web, l'authentification, les erreurs
+et l'interface en ligne de commande.
 
-models.py renferme les fonctions relatives à la base de données et aux objets Todo
+models.py renferme les fonctions relatives à la base de données et aux objets Todo.
 
 services.py permet d'importer et d'exporter des tâches au format csv.
 
@@ -38,6 +40,7 @@ Les fonctionnalités présentes sont :
 - la suppression de tâches
 - l'importation de tâches d'un fichier csv (voir format ci-dessous)
 - l'exportation des tâches dans un fichier csv (1 exportation = 1 nouveau fichier)
+- l'authentification (logins: utilisateur/utilisateur et administrateur/administrateur )
 
 
 ### Importation csv
@@ -60,21 +63,25 @@ id,task,complete,due
 4,kkk,False,2023-03-16
 ```
 
-## Limites / Pistes d'améiliorations
+## Points d'améliorations
 
-En faisant mon auto-critique, je remarques que mon projet possèdes certaines limites telles que :
+Par rapport au premier rendu, je pense que mon application web s'est renforcée sur
+les points suivants :
+
+-La sécurité des données : les formulaires sont maintenant gérés par WTForms, 
+des logging ont été mit en place et les erreurs sont gérées par des handlers.
+
+-L'industrialisation : Des BluePrint ont été implémentés pour améliorer la modularité 
+de l'applicatio webb. Cela permet aussi d'uniformiser les routes (url) et ainsi respecter
+les contraintes REST.
+
+-Les import : Dans la version précédente, les imports étaient fait deux fois. 
+Une première fois pour la preview et une seconde pour l'enregistrement. Désormait, 
+les tâches ne sont importés qu'une seule fois. La solution a été de les serialiser en JSON
+pour pouvoir les transferer du clients au serveur.
+
+-Les export : Dans la version précédente, chaque export était stocké localement dans 
+le projet même, ce qui pourrait poser des problème si trop d'export sont faits. Désormais,
+un export génére un fichier .csv qui pourrait être télécharger par le client sur sa machine.
 
 
-- L'application peut être vulnérable aux injections sql (sécurité des formulaires).
-- Dans la fonction import_csv de views.py, l'importation est réalisé 2 fois.
-Cela est du à la preview. Pour ne lire le fichier csv qu'une seule fois, il est
-possible que je crée un converter (type de donnés transmit avec les balises < a >)
-personalisé.
-- Id des tâches: La fonction getnext_id() génere un nouvel id en ajoutant 1
-à l'id maximum dans la base de données. Cela à ses limites dans le cas où
-l'application est utilisée pendant une longue période ou s'il y a beaucoup 
-tâches.
-- La répetition: le template html pour l'ajout de tâches et celui pour
-les modifier est très similaire ce qui entraine de la répétition. Cependant,
-Celles-ci étant 2 fonctionnalités bien différentes et pour respecter le SOC
-je n'ai pas fusionné ces 2 templates (ajouter.html et modifier.html).
