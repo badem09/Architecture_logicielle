@@ -8,10 +8,7 @@ from toudou import config
 
 TODO_FOLDER = "db"
 metadata_obj = MetaData()
-engine = create_engine(
-config['DATABASE_URL'],
-echo=config['DEBUG']
-)
+engine = create_engine(config['DATABASE_URL'], echo=config['DEBUG'])
 todo_table = Table(
     "todos",
     metadata_obj,

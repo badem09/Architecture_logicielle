@@ -1,16 +1,16 @@
-import json
-import traceback
-from datetime import datetime
-
+import click
 import flask
+import json
 import logging
+from datetime import datetime
 import toudou.models as models
 import toudou.services as services
-from flask import jsonify
+from flask_httpauth import HTTPBasicAuth, HTTPTokenAuth
 from flask_pydantic_spec import FlaskPydanticSpec
 from toudou.forms import FormAjouter, FormModifier
-from flask_httpauth import HTTPBasicAuth, HTTPTokenAuth
 from werkzeug.security import generate_password_hash, check_password_hash
+
+## BluePrints
 
 todos = flask.Blueprint('todos', "__name__", url_prefix='/todos')
 api = flask.Blueprint('api', __name__, url_prefix='/')
@@ -21,10 +21,12 @@ def create_app():
     app.config.from_prefixed_env(prefix="TOUDOU_FLASK")
     app.register_blueprint(todos)
 
-    spec = FlaskPydanticSpec('flask', title='Todo API', version='1.0.0', openapi_version='3.0.2')
-    spec.register(todos)
+    #spec = FlaskPydanticSpec('flask', title='Todo API', version='1.0.0', openapi_version='3.0.2')
+    #spec.register(todos)
     return app
 
+
+## Authentification
 
 auth = HTTPBasicAuth()
 token_auth = HTTPTokenAuth()
@@ -38,7 +40,6 @@ tokens = {
     'token1': 'utilisateur',
     'token2': 'administrateur'
 }
-
 
 role_user = {
     "utilisateur": "user",
@@ -56,16 +57,20 @@ def verify_password(username, password):
     if username in users and check_password_hash(users.get(username), password):
         return username
 
+
 @token_auth.verify_token
 def verify_token(token):
     if token in tokens:
         return tokens[token]
 
+
 @todos.route('/protected', methods=['GET'])
 @token_auth.login_required
 def protected():
-    return jsonify({'message': 'This is a protected endpoint!'})
+    return flask.jsonify({'message': 'This is a protected endpoint!'})
 
+
+## Logging et erreur
 
 logging.basicConfig(level=logging.INFO, format='%(asctime)s [%(levelname)s] %(message)s',
                     handlers=[logging.FileHandler('debug.log'), logging.StreamHandler()])
@@ -84,6 +89,8 @@ def handle_champs_error(error):
     logging.exception(error)
     return flask.redirect(flask.url_for('.index'))
 
+
+## Application Web
 
 @todos.route('/')
 def index() -> str:
@@ -152,7 +159,7 @@ def action_modifier() -> str:
 
 
 @todos.route('/ajouter')
-def ajouter() -> str:
+def redirect_ajouter() -> str:
     """
     Redirection vers la page 'ajouter.html'
     """
@@ -205,10 +212,9 @@ def action_import_taches_csv() -> str:
     try:
         tasks = services.import_from_csv(file)
         tasks_json = json.dumps([t.to_dict() for t in tasks])
-        return flask.render_template('import_csv.html', tasks=tasks, filename='"' + file.filename + '"', tasks_json=tasks_json)
+        return flask.render_template('import_csv.html', tasks=tasks, filename='"' + file.filename + '"',
+                                     tasks_json=tasks_json)
     except Exception as e:
-        traceback.print_exc()
-        handle_import_error()
         flask.flash("Problème de format du fichier csv. \n Pour plus "
                     "d informations, consultez le README", "error")
         return flask.render_template('import_csv.html', tasks=[], filename="")
@@ -243,7 +249,6 @@ def redirect_export_csv() -> str:
 
 @todos.route('/action_export_csv', methods=['POST'])
 @auth.login_required(role='admin')
-
 def export_csv():
     """
     Exporte les tâches sélectionnées dans un fichier .csv téléchargeable.
@@ -259,3 +264,71 @@ def export_csv():
         response.headers['Content-Disposition'] = 'attachment; filename=myfile.csv'
         response.headers['Content-Type'] = 'text/csv'
         return response
+
+
+## Click
+
+@click.group()
+def cli():
+    pass
+
+
+@cli.command()
+def init_db():
+    models.init_db()
+
+
+@cli.command()
+@click.option("-t", "--task", prompt="Your task", help="The task to remember.")
+@click.option("-d", "--due", type=click.DateTime(), default=None, help="Due date of the task.")
+def create(task: str, due: datetime):
+    models.create_todo(task, due=due)
+
+
+@cli.command()
+@click.argument('id', type=click.INT)
+def get(id: int):
+    click.echo(models.get_todo(id))
+
+
+@cli.command()
+@click.option("--as-csv", is_flag=True, help="Ouput a CSV string.")
+def get_all(as_csv: bool):
+    if as_csv:
+        click.echo(services.export_to_csv())
+    else:
+        click.echo(models.get_todos())
+
+
+@cli.command()
+@click.argument('file')
+def import_csv(file: str):
+    tasks = services.import_from_csv(file)
+    for t in tasks:
+        models.write_to_bd(t)
+    click.echo(str(len(tasks)) + " taches ont bien été enregistrés")
+
+
+@cli.command()
+def export_csv():
+    services.export_to_csv()
+
+
+@cli.command()
+@click.option("--id", required=True, type=click.INT, help="Todo's id.")
+@click.option("-c", "--complete", required=True, type=click.BOOL, help="Todo's id.")
+@click.option("-t", "--task", prompt="Your task", help="The task to remember.")
+@click.option("-d", "--due", type=click.DateTime(), default=None, help="Due date of the task.")
+def update(id: int, complete: bool, task: str, due: datetime):
+    models.update_todo(id, task, complete, due)
+
+
+@cli.command()
+@click.option("--id", required=True, type=click.INT, help="Todo's id.")
+def delete(id: int):
+    models.delete_todo(id)
+
+
+@cli.command()
+def delete_all():
+    models.delete_all()
