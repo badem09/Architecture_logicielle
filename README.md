@@ -6,7 +6,7 @@ BA Demba INFI2B
 ## Installation
 
 
-Dans le dossier du projet, rendez-vous dans le dossier toudou et executez la commande suivante:
+Dans le dossier du projet, rendez-vous dans le dossier \Architecture_logicielle\toudou\ et executez la commande suivante:
 
 ```bash
 $ pdm install 
@@ -14,7 +14,7 @@ $ pdm install
 
 ## Lancement
 
-Pour lancer le projet, executez la commande suivante (toujours dans le dossier toudou)
+Pour lancer le projet, executez la commande suivante (toujours dans le dossier \Architecture_logicielle\toudou\)
 
 ```bash
 $ pdm run start
