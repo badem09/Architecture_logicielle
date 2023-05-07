@@ -1,20 +1,25 @@
+import traceback
+
 import flask
 import logging
 import toudou.models as models
 import toudou.services as services
+from flask_pydantic_spec import FlaskPydanticSpec
 from toudou.forms import FormAjouter, FormModifier
 from flask_httpauth import HTTPBasicAuth
 from werkzeug.security import generate_password_hash, check_password_hash
 
 todos = flask.Blueprint('todos', "__name__", url_prefix='/todos')
-old_app = flask.Blueprint("old_app", "__name__", url_prefix='')
+api = flask.Blueprint('api', __name__, url_prefix='/')
 
+spec = FlaskPydanticSpec('flask', title='Todo API', version='1.0.0', openapi_version='3.0.2')
+spec.register(api)
 
 def create_app():
     app = flask.Flask(__name__)
     app.config.from_prefixed_env(prefix="TOUDOU_FLASK")
     app.register_blueprint(todos)
-    app.register_blueprint(old_app)
+    app.register_blueprint(api)
     return app
 
 
@@ -68,7 +73,7 @@ def index() -> str:
 
 
 @auth.login_required(role='admin')
-@todos.route('/completer/<int:id>')
+@todos.route('/<int:id>/completer')
 def completer(id: int) -> str:
     """
     Modifie le status d'une tâches en "Complétée" (achevée) et redirige vers la page 'index.html'
@@ -78,7 +83,7 @@ def completer(id: int) -> str:
     return flask.render_template('index.html', tasks=models.get_todos())
 
 
-@todos.route('/supprimer/<int:id>')
+@todos.route('/<int:id>/supprimer')
 @auth.login_required(role='admin')
 def supprimer(id: int) -> str:
     """
@@ -90,7 +95,7 @@ def supprimer(id: int) -> str:
     return flask.render_template('index.html', tasks=taches)
 
 
-@todos.route('/redirect_modifier/<int:id>')
+@todos.route('/<int:id>/modifier')
 @auth.login_required(role='admin')
 def redirect_modifier(id) -> str:
     """
@@ -105,9 +110,9 @@ def redirect_modifier(id) -> str:
     return flask.render_template('modifier.html', task=task, form=form)
 
 
-@todos.route('/modifier', methods=['POST'])
+@todos.route('/action_modifier', methods=['POST','GET'])
 @auth.login_required(role='admin')
-def modifier() -> str:
+def action_modifier() -> str:
     """
     Modifie une tâche à partir des entrées du formulaire de la page 'modifier.html'
     et renvoie vers la page 'index.html'
@@ -125,9 +130,9 @@ def modifier() -> str:
     return flask.render_template('modifier.html', task=models.get_todo(id))
 
 
-@todos.route('/redirect_ajouter')
+@todos.route('/ajouter')
 @auth.login_required(role='admin')
-def redirect_ajouter() -> str:
+def ajouter() -> str:
     """
     Redirection vers la page 'ajouter.html'
     """
@@ -135,9 +140,9 @@ def redirect_ajouter() -> str:
     return flask.render_template('ajouter.html', form=form)
 
 
-@todos.route('/ajout', methods=['POST'])
+@todos.route('/action_ajouter', methods=['POST'])
 @auth.login_required(role='admin')
-def ajout() -> str:
+def action_ajouter() -> str:
     """
     Ajoute une tâche à partir des entrées du formulaire de la page 'ajout.html'
     et refdirige vers la page 'index.html'
@@ -162,7 +167,7 @@ def tous_supprimer():
     return flask.render_template('index.html', tasks=[])
 
 
-@todos.route('/redirect_import_csv')
+@todos.route('/import')
 @auth.login_required(role='admin')
 def redirect_import_csv():
     """
@@ -171,9 +176,9 @@ def redirect_import_csv():
     return flask.render_template('import_csv.html', tasks=[], filename="")
 
 
-@todos.route('/import_csv', methods=['POST'])
-@todos.route('/import_csv/<filename>')
-def import_csv(filename="") -> str:
+@todos.route('/action_import_csv', methods=['POST'])
+@todos.route('/action_import_csv/<filename>')
+def action_import_csv(filename="") -> str:
     """
     Importe les tâches contenue dans le fichier [filename] et selon l'appel de fonction,
     affiche les tâches (appel avec le Formulaire) ou
@@ -181,13 +186,11 @@ def import_csv(filename="") -> str:
     de la page 'import_csv.html')
     """
     if flask.request.method == 'POST':  # Affiche les tâches dans le scrollBox
-        tab = flask.request.files
-        f = tab["file"]
-        try:  # En cas d'erreur de format
-            tasks = services.import_from_csv(f.filename)
-            return flask.render_template('import_csv.html', tasks=tasks, filename=f.filename)
+        file = flask.request.files["file"]
+        try:
+            tasks = services.import_from_csv(file)
+            return flask.render_template('import_csv.html', tasks=tasks, filename='"' + file.filename + '"')
         except Exception as e:
-            print(e)
             flask.flash("Problème de format du fichier csv. \n Pour plus "
                         "d informations, consultez le README", "error")
             return flask.render_template('import_csv.html', tasks=[], filename="")
@@ -200,7 +203,7 @@ def import_csv(filename="") -> str:
         return flask.render_template('index.html', tasks=models.get_todos())
 
 
-@todos.route('/redirect_export_csv')
+@todos.route('/export')
 def redirect_export_csv() -> str:
     """
     Redirige vers la page 'export_csv'.
@@ -208,11 +211,10 @@ def redirect_export_csv() -> str:
     return flask.render_template('export_csv.html', tasks=models.get_todos())
 
 
-@todos.route('/export_csv', methods=['POST'])
+@todos.route('/action_export_csv', methods=['POST'])
 def export_csv():
     """
-    Récupere les tâches à exporter et les exportes via 'services".
-    Attention: écrase le fichier todos.csv s'il existe déja
+
     """
     if flask.request.method == 'POST':
         liste_id = flask.request.form.getlist("task")
@@ -221,7 +223,11 @@ def export_csv():
             flask.flash("Aucune tâche n'a été séléctionnée", "error")
         else:
             tasks = [models.get_todo(int(id)) for id in liste_id]
-            path = services.export_to_csv(tasks)
-            flask.flash("Les tàches séléctionnées ont bien été exportées ici : \n" + path)
+            output = services.export_to_csv(tasks)
+            response = flask.make_response(output)
+            response.headers['Content-Disposition'] = 'attachment; filename=myfile.csv'
+            response.headers['Content-Type'] = 'text/csv'
+
+            return response
 
     return flask.render_template('export_csv.html', tasks=models.get_todos())
